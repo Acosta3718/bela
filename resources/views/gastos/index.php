@@ -1,7 +1,7 @@
 <?php $title = 'Gastos'; ob_start(); ?>
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3">Gastos</h1>
-    <a href="/gastos/crear" class="btn btn-primary">Registrar</a>
+    <a href="/bela/public/gastos/crear" class="btn btn-primary">Registrar</a>
 </div>
 <table class="table table-striped">
     <thead>
@@ -21,8 +21,8 @@
             <td>$<?= number_format((float)$gasto['monto'], 2) ?></td>
             <td><?= htmlspecialchars($gasto['notas']) ?></td>
             <td class="text-end">
-                <a class="btn btn-sm btn-secondary" href="/gastos/editar?id=<?= $gasto['id'] ?>">Editar</a>
-                <form action="/gastos/eliminar?id=<?= $gasto['id'] ?>" method="post" class="d-inline">
+                <a class="btn btn-sm btn-secondary" href="/bela/public/gastos/editar?id=<?= $gasto['id'] ?>">Editar</a>
+                <form action="/bela/public/gastos/eliminar?id=<?= $gasto['id'] ?>" method="post" class="d-inline">
                     <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar gasto?')">Eliminar</button>
                 </form>
             </td>

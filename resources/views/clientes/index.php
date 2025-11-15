@@ -1,7 +1,7 @@
 <?php $title = 'Clientes'; ob_start(); ?>
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3">Clientes</h1>
-    <a href="/clientes/crear" class="btn btn-primary">Nuevo</a>
+    <a href="/bela/public/clientes/crear" class="btn btn-primary">Nuevo</a>
 </div>
 <table class="table table-striped">
     <thead>
@@ -21,8 +21,8 @@
             <td><?= htmlspecialchars($cliente['telefono']) ?></td>
             <td><?= htmlspecialchars($cliente['notas']) ?></td>
             <td class="text-end">
-                <a class="btn btn-sm btn-secondary" href="/clientes/editar?id=<?= $cliente['id'] ?>">Editar</a>
-                <form action="/clientes/eliminar?id=<?= $cliente['id'] ?>" method="post" class="d-inline">
+                <a class="btn btn-sm btn-secondary" href="/bela/public/clientes/editar?id=<?= $cliente['id'] ?>">Editar</a>
+                <form action="/bela/public/clientes/eliminar?id=<?= $cliente['id'] ?>" method="post" class="d-inline">
                     <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar cliente?')">Eliminar</button>
                 </form>
             </td>

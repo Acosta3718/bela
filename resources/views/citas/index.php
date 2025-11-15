@@ -1,7 +1,7 @@
 <?php $title = 'Citas'; ob_start(); ?>
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3">Citas</h1>
-    <a href="/citas/crear" class="btn btn-primary">Agendar</a>
+    <a href="/bela/public/citas/crear" class="btn btn-primary">Agendar</a>
 </div>
 <table class="table table-striped">
     <thead>
@@ -30,8 +30,8 @@
             <td><?= htmlspecialchars($servicio['nombre'] ?? 'N/A') ?></td>
             <td><?= htmlspecialchars($cita['estado']) ?></td>
             <td class="text-end">
-                <a class="btn btn-sm btn-secondary" href="/citas/editar?id=<?= $cita['id'] ?>">Editar</a>
-                <form action="/citas/eliminar?id=<?= $cita['id'] ?>" method="post" class="d-inline">
+                <a class="btn btn-sm btn-secondary" href="/bela/public/citas/editar?id=<?= $cita['id'] ?>">Editar</a>
+                <form action="/bela/public/citas/eliminar?id=<?= $cita['id'] ?>" method="post" class="d-inline">
                     <button class="btn btn-sm btn-danger" onclick="return confirm('¿Cancelar cita?')">Eliminar</button>
                 </form>
             </td>

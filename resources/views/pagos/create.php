@@ -1,6 +1,6 @@
 <?php $title = 'Registrar pago a funcionario'; $errors = $errors ?? []; $pago = $pago ?? []; ob_start(); ?>
 <h1 class="h3 mb-4">Registrar pago a funcionario</h1>
-<form method="post" action="/pagos">
+<form method="post" action="/bela/public/pagos">
     <div class="mb-3">
         <label class="form-label">Funcionario</label>
         <select name="funcionario_id" class="form-select">
@@ -58,6 +58,6 @@
         <textarea name="notas" class="form-control" rows="3"><?= htmlspecialchars($pago['notas'] ?? '') ?></textarea>
     </div>
     <button class="btn btn-primary">Guardar</button>
-    <a href="/pagos" class="btn btn-link">Cancelar</a>
+    <a href="/bela/public/pagos" class="btn btn-link">Cancelar</a>
 </form>
 <?php $content = ob_get_clean(); include __DIR__ . '/../layouts/app.php'; ?>

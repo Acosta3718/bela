@@ -12,10 +12,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // AGREGAR VALIDACIÓN DE AUTENTICACIÓN
+        /*// AGREGAR VALIDACIÓN DE AUTENTICACIÓN
         if (!Auth::check()) {
             return $this->redirect('/login');
-        }
+        }*/
         $usuario = Auth::user();
         $citas = (new Cita())->all();
         $funcionarios = (new Funcionario())->all();

@@ -1,7 +1,7 @@
 <?php $title = 'Pagos a funcionarios'; ob_start(); ?>
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3">Pagos a funcionarios</h1>
-    <a href="/pagos/crear" class="btn btn-primary">Registrar pago</a>
+    <a href="/bela/public/pagos/crear" class="btn btn-primary">Registrar pago</a>
 </div>
 <table class="table table-striped">
     <thead>
@@ -24,7 +24,7 @@
             <td><?= htmlspecialchars($pago['periodo_inicio']) ?> - <?= htmlspecialchars($pago['periodo_fin']) ?></td>
             <td><?= htmlspecialchars($pago['notas']) ?></td>
             <td class="text-end">
-                <form action="/pagos/eliminar?id=<?= $pago['id'] ?>" method="post" class="d-inline">
+                <form action="/bela/public/pagos/eliminar?id=<?= $pago['id'] ?>" method="post" class="d-inline">
                     <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar pago?')">Eliminar</button>
                 </form>
             </td>

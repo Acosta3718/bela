@@ -5,7 +5,7 @@
         <?php if (!empty($errors['general'])): ?>
             <div class="alert alert-danger"><?= implode(', ', $errors['general']) ?></div>
         <?php endif; ?>
-        <form method="post" action="/login">
+        <form method="post" action="/bela/public/login">
             <div class="mb-3">
                 <label class="form-label">Email</label>
                 <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">

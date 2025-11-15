@@ -1,7 +1,7 @@
 <?php $title = 'Servicios'; ob_start(); ?>
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3">Servicios</h1>
-    <a href="/servicios/crear" class="btn btn-primary">Nuevo</a>
+    <a href="/bela/public/servicios/crear" class="btn btn-primary">Nuevo</a>
 </div>
 <table class="table table-striped">
     <thead>
@@ -21,8 +21,8 @@
             <td><?= htmlspecialchars($servicio['precio_base']) ?></td>
             <td><?= $servicio['activo'] ? 'Sí' : 'No' ?></td>
             <td class="text-end">
-                <a class="btn btn-sm btn-secondary" href="/servicios/editar?id=<?= $servicio['id'] ?>">Editar</a>
-                <form action="/servicios/eliminar?id=<?= $servicio['id'] ?>" method="post" class="d-inline">
+                <a class="btn btn-sm btn-secondary" href="/bela/public/servicios/editar?id=<?= $servicio['id'] ?>">Editar</a>
+                <form action="/bela/public/servicios/eliminar?id=<?= $servicio['id'] ?>" method="post" class="d-inline">
                     <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar servicio?')">Eliminar</button>
                 </form>
             </td>

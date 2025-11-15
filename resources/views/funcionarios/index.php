@@ -1,7 +1,7 @@
 <?php $title = 'Funcionarios'; ob_start(); ?>
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3">Funcionarios</h1>
-    <a href="/funcionarios/crear" class="btn btn-primary">Nuevo</a>
+    <a href="/bela/public/funcionarios/crear" class="btn btn-primary">Nuevo</a>
 </div>
 <table class="table table-striped">
     <thead>
@@ -25,8 +25,8 @@
             <td><?= htmlspecialchars($funcionario['porcentaje_comision']) ?></td>
             <td><?= $funcionario['activo'] ? 'Sí' : 'No' ?></td>
             <td class="text-end">
-                <a class="btn btn-sm btn-secondary" href="/funcionarios/editar?id=<?= $funcionario['id'] ?>">Editar</a>
-                <form action="/funcionarios/eliminar?id=<?= $funcionario['id'] ?>" method="post" class="d-inline">
+                <a class="btn btn-sm btn-secondary" href="/bela/public/funcionarios/editar?id=<?= $funcionario['id'] ?>">Editar</a>
+                <form action="/bela/public/funcionarios/eliminar?id=<?= $funcionario['id'] ?>" method="post" class="d-inline">
                     <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar funcionario?')">Eliminar</button>
                 </form>
             </td>
