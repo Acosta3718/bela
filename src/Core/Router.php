@@ -9,6 +9,11 @@ class Router
         'POST' => [],
     ];
 
+    protected array $publicRoutes = [
+        'GET' => ['/login'],
+        'POST' => ['/login'],
+    ];
+
     public function __construct(private string $basePath = '')
     {
         $this->basePath = '/' . trim($basePath, '/');
@@ -44,6 +49,10 @@ class Router
         
         $method = strtoupper($method);
 
+        if (!Auth::check() && !$this->isPublicRoute($method, $uri)) {
+            redirect('/login');
+        }
+
         $action = $this->routes[$method][$uri] ?? null;
         
         if (!$action) {
@@ -69,24 +78,7 @@ class Router
 
     /*public function dispatch(string $method, string $uri)
     {
-        $uri = $this->stripBasePath(parse_url($uri, PHP_URL_PATH));
-
-        if ($uri === '' || $uri === '/' || $uri === 'index.php' || $uri === '/index.php') {
-            $uri = '/';
-        } else {
-            $uri = $this->normalize($uri);
-        }
-        $method = strtoupper($method);
-
-        $action = $this->routes[$method][$uri] ?? null;
-        if (!$action) {
-            http_response_code(404);
-            return View::make('errors/404', ['uri' => $uri]);
-        }
-
-        if (is_callable($action)) {
-            return call_user_func($action);
-        }
+@@ -90,26 +99,34 @@ class Router
 
         [$controller, $method] = $action;
 
@@ -111,5 +103,13 @@ class Router
         }
 
         return $uri ?: '/';
+    }
+
+    protected function isPublicRoute(string $method, string $uri): bool
+    {
+        $method = strtoupper($method);
+        $uri = $this->normalize($uri);
+
+        return in_array($uri, $this->publicRoutes[$method] ?? [], true);
     }
 }

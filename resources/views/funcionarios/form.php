@@ -9,6 +9,12 @@
     <?php if (!empty($errors['email'])): ?><div class="text-danger small"><?= implode(', ', $errors['email']) ?></div><?php endif; ?>
 </div>
 <div class="mb-3">
+    <label class="form-label">Contraseña<?= !empty($funcionario['id']) ? ' (opcional)' : '' ?></label>
+    <input type="password" name="password" class="form-control" autocomplete="new-password">
+    <?php if (!empty($errors['password'])): ?><div class="text-danger small"><?= implode(', ', $errors['password']) ?></div><?php endif; ?>
+    <?php if (!empty($funcionario['id'])): ?><div class="form-text">Déjelo en blanco para mantener la contraseña actual.</div><?php endif; ?>
+</div>
+<div class="mb-3">
     <label class="form-label">Teléfono</label>
     <input type="text" name="telefono" class="form-control" value="<?= htmlspecialchars($funcionario['telefono'] ?? '') ?>">
     <?php if (!empty($errors['telefono'])): ?><div class="text-danger small"><?= implode(', ', $errors['telefono']) ?></div><?php endif; ?>

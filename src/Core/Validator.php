@@ -17,6 +17,12 @@ class Validator
                 if ($rule === 'email' && $value && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
                     $errors[$field][] = 'Formato de correo inválido';
                 }
+                if (str_starts_with($rule, 'min:')) {
+                    $limit = (int)substr($rule, 4);
+                    if ($value && strlen($value) < $limit) {
+                        $errors[$field][] = "Debe tener al menos {$limit} caracteres";
+                    }
+                }
                 if (str_starts_with($rule, 'max:')) {
                     $limit = (int)substr($rule, 4);
                     if ($value && strlen($value) > $limit) {
@@ -26,5 +32,5 @@ class Validator
             }
         }
         return $errors;
-    }
+   }
 }

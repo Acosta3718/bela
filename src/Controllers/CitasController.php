@@ -32,6 +32,8 @@ class CitasController extends Controller
         $funcionarios = $this->funcionario->all();
         $servicios = $this->servicio->all();
         return $this->view('citas/index', compact('citas', 'clientes', 'funcionarios', 'servicios'));
+        $serviciosPorCita = $this->model->serviciosPorCita(array_column($citas, 'id'));
+        return $this->view('citas/index', compact('citas', 'clientes', 'funcionarios', 'serviciosPorCita'));
     }
 
     public function create()
@@ -55,6 +57,11 @@ class CitasController extends Controller
     public function store()
     {
         $data = Request::all();
+        $serviciosSeleccionados = [];
+        if (!empty($data['servicios']) && is_array($data['servicios'])) {
+            $serviciosSeleccionados = array_values(array_unique(array_filter(array_map('intval', $data['servicios']))));
+        }
+
         $errors = Validator::validate($data, [
             'cliente_id' => 'required',
             'funcionario_id' => 'required',
@@ -64,16 +71,25 @@ class CitasController extends Controller
             'hora_fin' => 'required'
         ]);
 
+        if (empty($serviciosSeleccionados)) {
+            $errors['servicios'][] = 'Seleccione al menos un servicio';
+        }
+
         if ($errors) {
             $clientes = $this->cliente->all();
             $funcionarios = $this->funcionario->all();
             $servicios = $this->servicio->all();
             $cita = $data;
+            $cita['servicios'] = $serviciosSeleccionados;
             return $this->view('citas/create', compact('errors', 'cita', 'clientes', 'funcionarios', 'servicios'));
         }
 
         $data['estado'] = $data['estado'] ?? 'pendiente';
         $this->model->create($data);
+        $data['servicio_id'] = $serviciosSeleccionados ? (int)$serviciosSeleccionados[0] : null;
+        unset($data['servicios']);
+        $citaId = $this->model->create($data);
+        $this->model->syncServicios($citaId, $serviciosSeleccionados);
         return $this->redirect('/citas');
     }
 
@@ -81,6 +97,8 @@ class CitasController extends Controller
     {
         $id = (int)Request::get('id');
         $cita = $this->model->find($id);
+        $detalles = $this->model->obtenerServicios($id);
+        $cita['servicios'] = array_map(fn($detalle) => (int)$detalle['servicio_id'], $detalles);
         $clientes = $this->cliente->all();
         $funcionarios = $this->funcionario->all();
         $servicios = $this->servicio->all();
@@ -91,6 +109,11 @@ class CitasController extends Controller
     {
         $id = (int)Request::get('id');
         $data = Request::all();
+        $serviciosSeleccionados = [];
+        if (!empty($data['servicios']) && is_array($data['servicios'])) {
+            $serviciosSeleccionados = array_values(array_unique(array_filter(array_map('intval', $data['servicios']))));
+        }
+
         $errors = Validator::validate($data, [
             'cliente_id' => 'required',
             'funcionario_id' => 'required',
@@ -100,15 +123,23 @@ class CitasController extends Controller
             'hora_fin' => 'required'
         ]);
 
+        if (empty($serviciosSeleccionados)) {
+            $errors['servicios'][] = 'Seleccione al menos un servicio';
+        }
+
         if ($errors) {
             $cita = array_merge($data, ['id' => $id]);
+            $cita['servicios'] = $serviciosSeleccionados;
             $clientes = $this->cliente->all();
             $funcionarios = $this->funcionario->all();
             $servicios = $this->servicio->all();
             return $this->view('citas/edit', compact('errors', 'cita', 'clientes', 'funcionarios', 'servicios'));
         }
 
+        $data['servicio_id'] = $serviciosSeleccionados ? (int)$serviciosSeleccionados[0] : null;
+        unset($data['servicios']);
         $this->model->update($id, $data);
+        $this->model->syncServicios($id, $serviciosSeleccionados);
         return $this->redirect('/citas');
     }
 

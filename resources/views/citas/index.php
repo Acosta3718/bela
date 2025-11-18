@@ -11,6 +11,7 @@
             <th>Cliente</th>
             <th>Funcionario</th>
             <th>Servicio</th>
+            <th>Servicios</th>
             <th>Estado</th>
             <th></th>
         </tr>
@@ -21,6 +22,7 @@
             $cliente = array_values(array_filter($clientes, fn($c) => $c['id'] == $cita['cliente_id']))[0] ?? null;
             $funcionario = array_values(array_filter($funcionarios, fn($f) => $f['id'] == $cita['funcionario_id']))[0] ?? null;
             $servicio = array_values(array_filter($servicios, fn($s) => $s['id'] == $cita['servicio_id']))[0] ?? null;
+            $detalleServicios = $serviciosPorCita[$cita['id']] ?? [];
         ?>
         <tr>
             <td><?= htmlspecialchars($cita['fecha']) ?></td>
@@ -28,6 +30,17 @@
             <td><?= htmlspecialchars($cliente['nombre'] ?? 'N/A') ?></td>
             <td><?= htmlspecialchars($funcionario['nombre'] ?? 'N/A') ?></td>
             <td><?= htmlspecialchars($servicio['nombre'] ?? 'N/A') ?></td>
+            <td>
+                <?php if (!empty($detalleServicios)): ?>
+                    <ul class="list-unstyled mb-0">
+                        <?php foreach ($detalleServicios as $detalle): ?>
+                            <li><?= htmlspecialchars($detalle['nombre']) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <span class="text-muted">Sin servicios</span>
+                <?php endif; ?>
+            </td>
             <td><?= htmlspecialchars($cita['estado']) ?></td>
             <td class="text-end">
                 <a class="btn btn-sm btn-secondary" href="/bela/public/citas/editar?id=<?= $cita['id'] ?>">Editar</a>
