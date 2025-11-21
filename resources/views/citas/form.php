@@ -1,4 +1,3 @@
-<div class="mb-3">
 <?php
 $errors = $errors ?? [];
 $cita = $cita ?? [];
@@ -24,17 +23,26 @@ $detalleServicios = $cita['servicios'] ?? [];
 if (empty($detalleServicios)) {
     $detalleServicios = [''];
 }
+
+$serviciosPorId = [];
+foreach ($servicios as $servicio) {
+    $serviciosPorId[(int)$servicio['id']] = $servicio;
+}
+
+$formatPrecio = function ($valor) {
+    if ($valor === null || $valor === '') {
+        return '—';
+    }
+    return '$' . number_format((float)$valor, 0, ',', '.');
+};
 ?>
 <div class="mb-3 position-relative">
-    <label class="form-label">Cliente</label>
-    <select name="cliente_id" class="form-select">
-        <option value="">Seleccione</option>
-        <?php foreach ($clientes as $item): ?>
-            <option value="<?= $item['id'] ?>" <?= (($cita['cliente_id'] ?? '') == $item['id']) ? 'selected' : '' ?>><?= htmlspecialchars($item['nombre']) ?></option>
-        <?php endforeach; ?>
-    </select>
-    <input type="hidden" name="cliente_id" id="cliente-id" value="<?= htmlspecialchars($cita['cliente_id'] ?? '') ?>">
-    <input type="text" class="form-control" autocomplete="off" data-cliente-search data-url="<?= url('/clientes/buscar') ?>" value="<?= htmlspecialchars($clienteSeleccionado) ?>" placeholder="Buscar por nombre, teléfono o correo">
+     <label class="form-label">Cliente</label>
+     <div class="input-group">
+        <input type="hidden" name="cliente_id" id="cliente-id" value="<?= htmlspecialchars($cita['cliente_id'] ?? '') ?>">
+        <input type="text" class="form-control" autocomplete="off" data-cliente-search data-url="<?= url('/clientes/buscar') ?>" value="<?= htmlspecialchars($clienteSeleccionado) ?>" placeholder="Buscar por nombre, teléfono o correo">
+        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modal-nuevo-cliente">Nuevo cliente</button>
+     </div>
     <div id="cliente-sugerencias" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 1050;"></div>
     <?php if (!empty($errors['cliente_id'])): ?><div class="text-danger small"><?= implode(', ', $errors['cliente_id']) ?></div><?php endif; ?>
     <div class="form-text">Escribe al menos dos caracteres para ver sugerencias.</div>
@@ -50,14 +58,6 @@ if (empty($detalleServicios)) {
     <?php if (!empty($errors['funcionario_id'])): ?><div class="text-danger small"><?= implode(', ', $errors['funcionario_id']) ?></div><?php endif; ?>
 </div>
 <div class="mb-3">
-    <label class="form-label">Servicio</label>
-    <select name="servicio_id" class="form-select">
-        <option value="">Seleccione</option>
-        <?php foreach ($servicios as $item): ?>
-            <option value="<?= $item['id'] ?>" <?= (($cita['servicio_id'] ?? '') == $item['id']) ? 'selected' : '' ?>><?= htmlspecialchars($item['nombre']) ?></option>
-        <?php endforeach; ?>
-    </select>
-    <?php if (!empty($errors['servicio_id'])): ?><div class="text-danger small"><?= implode(', ', $errors['servicio_id']) ?></div><?php endif; ?>
     <label class="form-label">Servicios</label>
     <div class="card">
         <div class="card-body">
@@ -73,6 +73,9 @@ if (empty($detalleServicios)) {
                         </select>
                     </div>
                     <div class="col-auto">
+                        <span class="text-muted small" data-servicio-precio><?= isset($serviciosPorId[(int)$servicioId]) ? $formatPrecio($serviciosPorId[(int)$servicioId]['precio_base'] ?? '') : '—' ?></span>
+                    </div>
+                    <div class="col-auto">
                         <button type="button" class="btn btn-outline-danger btn-sm eliminar-servicio" title="Quitar">&times;</button>
                     </div>
                 </div>
@@ -80,14 +83,14 @@ if (empty($detalleServicios)) {
             </div>
             <button type="button" class="btn btn-sm btn-outline-primary" id="agregar-servicio">Agregar servicio</button>
         </div>
-    </div>
+    </div>  
     <?php if (!empty($errors['servicios'])): ?><div class="text-danger small mt-2"><?= implode(', ', $errors['servicios']) ?></div><?php endif; ?>
 </div>
 <div class="row">
     <div class="col-md-4">
         <div class="mb-3">
             <label class="form-label">Fecha</label>
-            <input type="date" name="fecha" class="form-control" value="<?= htmlspecialchars($cita['fecha'] ?? '') ?>">
+            <input type="date" name="fecha" class="form-control" value="<?= htmlspecialchars($cita['fecha'] ?? date('Y-m-d')) ?>">
             <?php if (!empty($errors['fecha'])): ?><div class="text-danger small"><?= implode(', ', $errors['fecha']) ?></div><?php endif; ?>
         </div>
     </div>
@@ -120,7 +123,6 @@ if (empty($detalleServicios)) {
     <label class="form-label">Notas</label>
     <textarea name="notas" class="form-control" rows="3"><?= htmlspecialchars($cita['notas'] ?? '') ?></textarea>
 </div>
-</div>
 <template id="servicio-row-template">
     <div class="detalle-servicio row g-2 align-items-center mb-2">
         <div class="col">
@@ -132,10 +134,46 @@ if (empty($detalleServicios)) {
             </select>
         </div>
         <div class="col-auto">
+            <span class="text-muted small" data-servicio-precio>—</span>
+        </div>
+        <div class="col-auto">
             <button type="button" class="btn btn-outline-danger btn-sm eliminar-servicio" title="Quitar">&times;</button>
         </div>
     </div>
 </template>
+
+<div class="modal fade" id="modal-nuevo-cliente" tabindex="-1" aria-labelledby="modal-nuevo-cliente-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-nuevo-cliente-label">Nuevo cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-nuevo-cliente" action="<?= url('/clientes/inline') ?>" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" name="nombre" class="form-control" required maxlength="150">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" name="telefono" class="form-control" required maxlength="20">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Correo electrónico</label>
+                        <input type="email" name="email" class="form-control" maxlength="150">
+                    </div>
+                    <div class="text-danger small mb-2 d-none" data-inline-error></div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-link" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 (function() {
     const searchInput = document.querySelector('[data-cliente-search]');
@@ -163,6 +201,22 @@ if (empty($detalleServicios)) {
             parts.push(item.email);
         }
         return parts.filter(Boolean).join(' · ');
+    };
+
+    const asignarCliente = (cliente) => {
+        if (!cliente || !cliente.id) {
+            return;
+        }
+        const label = cliente.label || buildLabel(cliente);
+        hiddenInput.value = cliente.id;
+        searchInput.value = label;
+        selectedLabel = label;
+        clearSuggestions();
+    };
+
+    window.belaClienteSelector = {
+        set: asignarCliente,
+        buildLabel
     };
 
     const renderSuggestions = (items) => {
@@ -235,10 +289,7 @@ if (empty($detalleServicios)) {
         if (!button) {
             return;
         }
-        hiddenInput.value = button.dataset.id;
-        searchInput.value = button.dataset.label;
-        selectedLabel = button.dataset.label;
-        clearSuggestions();
+        asignarCliente({ id: button.dataset.id, label: button.dataset.label });
     });
 
     document.addEventListener('click', function(event) {
@@ -271,12 +322,27 @@ if (empty($detalleServicios)) {
         });
     };
 
+    const actualizarPrecio = (select) => {
+        if (!select) {
+            return;
+        }
+        const precioLabel = select.selectedOptions[0]?.dataset.precioLabel || '—';
+        const etiqueta = select.closest('.detalle-servicio')?.querySelector('[data-servicio-precio]');
+        if (etiqueta) {
+            etiqueta.textContent = precioLabel;
+        }
+    };
+
+    container.querySelectorAll('[data-servicio-select]').forEach(actualizarPrecio);
+
     actualizarBotones();
 
     addButton.addEventListener('click', () => {
         const fragment = template.content.cloneNode(true);
+        const nuevoSelect = fragment.querySelector('[data-servicio-select]');
         container.appendChild(fragment);
         actualizarBotones();
+        actualizarPrecio(nuevoSelect);
     });
 
     container.addEventListener('click', (event) => {
@@ -287,6 +353,84 @@ if (empty($detalleServicios)) {
                 actualizarBotones();
             }
         }
+    });
+
+    container.addEventListener('change', (event) => {
+        if (event.target.matches('[data-servicio-select]')) {
+            actualizarPrecio(event.target);
+        }
+    });
+})();
+
+(function() {
+    const form = document.getElementById('form-nuevo-cliente');
+    const modalEl = document.getElementById('modal-nuevo-cliente');
+
+    if (!form || !modalEl) {
+        return;
+    }
+
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    const errorBox = form.querySelector('[data-inline-error]');
+
+    const limpiarErrores = () => {
+        if (errorBox) {
+            errorBox.textContent = '';
+            errorBox.classList.add('d-none');
+        }
+    };
+
+    const mostrarErrores = (errores) => {
+        if (!errorBox) {
+            return;
+        }
+        const mensajes = [];
+        if (errores && typeof errores === 'object') {
+            Object.values(errores).forEach((lista) => {
+                if (Array.isArray(lista)) {
+                    mensajes.push(...lista);
+                }
+            });
+        }
+        errorBox.textContent = mensajes.length ? mensajes.join(' ') : 'No se pudo guardar el cliente.';
+        errorBox.classList.remove('d-none');
+    };
+
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        limpiarErrores();
+
+        const formData = new FormData(form);
+        const body = new URLSearchParams();
+        formData.forEach((value, key) => {
+            body.append(key, value.toString());
+        });
+
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            },
+            body
+        })
+            .then(async (response) => {
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    return Promise.reject(payload.errors || null);
+                }
+                return payload;
+            })
+            .then((cliente) => {
+                if (window.belaClienteSelector) {
+                    window.belaClienteSelector.set(cliente);
+                }
+                form.reset();
+                modal.hide();
+            })
+            .catch((errores) => {
+                mostrarErrores(errores);
+            });
     });
 })();
 </script>

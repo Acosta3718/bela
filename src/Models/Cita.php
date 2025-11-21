@@ -12,6 +12,8 @@ class Cita extends Model
 {
     protected string $table = 'citas';
 
+    private ?bool $pivotExiste = null;
+    
     protected array $fillable = [
         'cliente_id',
         'funcionario_id',
@@ -141,7 +143,6 @@ class Cita extends Model
 
     public function ocupados(int $funcionarioId, string $fecha): array
     {
-        $stmt = $this->db->prepare("SELECT hora_inicio, hora_fin FROM {$this->table} WHERE funcionario_id = :funcionario AND fecha = :fecha AND estado != 'cancelada'");
         $stmt = $this->db->prepare(
             "SELECT hora_inicio, hora_fin FROM {$this->table} "
             . "WHERE funcionario_id = :funcionario AND fecha = :fecha AND estado != 'cancelada'"
@@ -150,7 +151,6 @@ class Cita extends Model
         return $stmt->fetchAll();
     }
     
-
     protected function obtenerHora(string $valor): string
     {
         $valor = trim($valor);
@@ -166,6 +166,10 @@ class Cita extends Model
 
     public function syncServicios(int $citaId, array $servicios): void
     {
+        if (!$this->pivotExiste()) {
+            return;
+        }
+
         $this->db->prepare('DELETE FROM cita_servicios WHERE cita_id = :cita')->execute(['cita' => $citaId]);
 
         if (empty($servicios)) {
@@ -183,6 +187,18 @@ class Cita extends Model
 
     public function obtenerServicios(int $citaId): array
     {
+        if (!$this->pivotExiste()) {
+            $stmt = $this->db->prepare(
+                'SELECT c.id as cita_id, c.servicio_id, s.nombre, s.duracion_minutos '
+                . "FROM {$this->table} c "
+                . 'JOIN servicios s ON s.id = c.servicio_id '
+                . 'WHERE c.id = :cita'
+            );
+            $stmt->execute(['cita' => $citaId]);
+            $row = $stmt->fetch();
+            return $row ? [$row] : [];
+        }
+
         $stmt = $this->db->prepare(
             'SELECT cs.cita_id, cs.servicio_id, s.nombre, s.duracion_minutos '
             . 'FROM cita_servicios cs '
@@ -204,20 +220,69 @@ class Cita extends Model
         }
 
         $placeholders = implode(', ', array_fill(0, count($ids), '?'));
-        $stmt = $this->db->prepare(
-            'SELECT cs.cita_id, cs.servicio_id, s.nombre '
-            . 'FROM cita_servicios cs '
-            . 'JOIN servicios s ON s.id = cs.servicio_id '
-            . " WHERE cs.cita_id IN ({$placeholders})"
-            . ' ORDER BY cs.cita_id, cs.id'
-        );
-        $stmt->execute($ids);
+
+        if ($this->pivotExiste()) {
+            $stmt = $this->db->prepare(
+                'SELECT cs.cita_id, cs.servicio_id, s.nombre '
+                . 'FROM cita_servicios cs '
+                . 'JOIN servicios s ON s.id = cs.servicio_id '
+                . " WHERE cs.cita_id IN ({$placeholders})"
+                . ' ORDER BY cs.cita_id, cs.id'
+            );
+            $stmt->execute($ids);
+            $rows = $stmt->fetchAll();
+        } else {
+            $stmt = $this->db->prepare(
+                'SELECT c.id as cita_id, c.servicio_id, s.nombre '
+                . "FROM {$this->table} c "
+                . 'JOIN servicios s ON s.id = c.servicio_id '
+                . "WHERE c.id IN ({$placeholders})"
+                . ' ORDER BY c.id'
+            );
+            $stmt->execute($ids);
+            $rows = $stmt->fetchAll();
+        }
 
         $agrupados = [];
-        foreach ($stmt->fetchAll() as $row) {
+        foreach ($rows as $row) {
             $agrupados[$row['cita_id']][] = $row;
         }
 
         return $agrupados;
+    }
+
+    public function existeConflicto(int $funcionarioId, string $fecha, string $horaInicio, string $horaFin, ?int $excluirId = null): bool
+    {
+        $sql = "SELECT COUNT(*) FROM {$this->table} WHERE funcionario_id = :funcionario AND fecha = :fecha AND estado != 'cancelada'"
+            . ' AND hora_inicio < :fin AND hora_fin > :inicio';
+
+        $params = [
+            'funcionario' => $funcionarioId,
+            'fecha' => $fecha,
+            'inicio' => $horaInicio,
+            'fin' => $horaFin,
+        ];
+
+        if ($excluirId !== null) {
+            $sql .= ' AND id != :id';
+            $params['id'] = $excluirId;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return (int)$stmt->fetchColumn() > 0;
+    }
+
+    private function pivotExiste(): bool
+    {
+        if ($this->pivotExiste !== null) {
+            return $this->pivotExiste;
+        }
+
+        $stmt = $this->db->query("SHOW TABLES LIKE 'cita_servicios'");
+        $this->pivotExiste = (bool)$stmt->fetchColumn();
+
+        return $this->pivotExiste;
     }
 }

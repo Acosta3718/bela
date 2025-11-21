@@ -18,8 +18,6 @@ class ClientesController extends Controller
 
     public function index()
     {
-        $clientes = $this->model->all();
-        return $this->view('clientes/index', compact('clientes'));
         $termino = (string)Request::get('buscar', '');
 
         if ($termino !== '') {
@@ -33,7 +31,7 @@ class ClientesController extends Controller
         return $this->view('clientes/index', compact('clientes', 'busqueda'));
     }
 
-    public function create()
+        public function create()
     {
         return $this->view('clientes/create');
     }
@@ -54,6 +52,42 @@ class ClientesController extends Controller
 
         $this->model->create($data);
         return $this->redirect('/clientes');
+    }
+
+    public function storeInline()
+    {
+        $data = Request::all();
+        $errors = Validator::validate($data, [
+            'nombre' => 'required|max:150',
+            'email' => 'email',
+            'telefono' => 'required|max:20'
+        ]);
+
+        header('Content-Type: application/json; charset=utf-8');
+
+        if ($errors) {
+            http_response_code(422);
+            echo json_encode(['errors' => $errors]);
+            exit;
+        }
+
+        $clienteId = $this->model->create($data);
+        $cliente = $this->model->find($clienteId);
+
+        echo json_encode([
+            'id' => (int)$cliente['id'],
+            'nombre' => $cliente['nombre'],
+            'email' => $cliente['email'],
+            'telefono' => $cliente['telefono'],
+        ]);
+        exit;
+    }
+
+    public function edit()
+    {
+        $id = (int)Request::get('id');
+        $cliente = $this->model->find($id);
+        return $this->view('clientes/edit', compact('cliente'));
     }
 
     public function update()

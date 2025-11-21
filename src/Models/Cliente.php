@@ -16,7 +16,6 @@ class Cliente extends Model
         'notas'
     ];
 
-
     public function buscar(string $termino, int $limite = 20): array
     {
         $termino = trim($termino);

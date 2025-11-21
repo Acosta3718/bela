@@ -15,10 +15,8 @@ class Funcionario extends Model
         'rol',
         'porcentaje_comision',
         'activo',
-        'activo',
         'password'
     ];
-
 
     public function activos(): array
     {

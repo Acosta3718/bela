@@ -13,14 +13,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        /*// AGREGAR VALIDACIÓN DE AUTENTICACIÓN
-        if (!Auth::check()) {
-            return $this->redirect('/login');
-        }*/
         $usuario = Auth::user();
-        $citas = (new Cita())->all();
-        $funcionarios = (new Funcionario())->all();
-        $ventas = (new Venta())->all();
 
         $citaModel = new Cita();
         $funcionarioModel = new Funcionario();
@@ -44,9 +37,6 @@ class DashboardController extends Controller
 
         return $this->view('dashboard/index', [
             'usuario' => $usuario,
-            'totalCitas' => count($citas),
-            'totalFuncionarios' => count($funcionarios),
-            'totalVentas' => count($ventas),
             'totalCitas' => $totalCitas,
             'totalFuncionarios' => $totalFuncionarios,
             'totalVentas' => $totalVentas,
