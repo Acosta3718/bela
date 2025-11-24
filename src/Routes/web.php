@@ -35,6 +35,7 @@ $router->get('/clientes', [ClientesController::class, 'index']);
 $router->get('/clientes/buscar', [ClientesController::class, 'buscar']);
 $router->get('/clientes/crear', [ClientesController::class, 'create']);
 $router->post('/clientes', [ClientesController::class, 'store']);
+$router->post('/clientes/inline', [ClientesController::class, 'storeInline']);
 $router->get('/clientes/editar', [ClientesController::class, 'edit']);
 $router->post('/clientes/actualizar', [ClientesController::class, 'update']);
 $router->post('/clientes/eliminar', [ClientesController::class, 'destroy']);

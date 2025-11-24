@@ -57,6 +57,23 @@ class Cita extends Model
         return $stmt->fetchAll();
     }
 
+    public function entreFechas(string $desde, string $hasta, ?int $funcionarioId = null): array
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE fecha BETWEEN :desde AND :hasta";
+        $params = ['desde' => $desde, 'hasta' => $hasta];
+
+        if ($funcionarioId !== null) {
+            $sql .= " AND funcionario_id = :funcionario";
+            $params['funcionario'] = $funcionarioId;
+        }
+
+        $sql .= " ORDER BY fecha, hora_inicio";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+
     public function bloquesDisponiblesDelDia(int $funcionarioId, string $fecha): array
     {
         $stmt = $this->db->prepare(
@@ -189,7 +206,7 @@ class Cita extends Model
     {
         if (!$this->pivotExiste()) {
             $stmt = $this->db->prepare(
-                'SELECT c.id as cita_id, c.servicio_id, s.nombre, s.duracion_minutos '
+                'SELECT c.id as cita_id, c.servicio_id, s.nombre, s.duracion_minutos, s.precio_base '
                 . "FROM {$this->table} c "
                 . 'JOIN servicios s ON s.id = c.servicio_id '
                 . 'WHERE c.id = :cita'
@@ -200,7 +217,7 @@ class Cita extends Model
         }
 
         $stmt = $this->db->prepare(
-            'SELECT cs.cita_id, cs.servicio_id, s.nombre, s.duracion_minutos '
+            'SELECT cs.cita_id, cs.servicio_id, s.nombre, s.duracion_minutos, s.precio_base '
             . 'FROM cita_servicios cs '
             . 'JOIN servicios s ON s.id = cs.servicio_id '
             . 'WHERE cs.cita_id = :cita '
@@ -251,6 +268,86 @@ class Cita extends Model
         return $agrupados;
     }
 
+    public function serviciosConPrecioPorCita(array $ids): array
+    {
+        $ids = array_values(array_filter(array_map('intval', $ids)));
+
+        if (empty($ids)) {
+            return [];
+        }
+
+        $placeholders = implode(', ', array_fill(0, count($ids), '?'));
+        $rows = [];
+
+        if ($this->pivotExiste()) {
+            $stmt = $this->db->prepare(
+                'SELECT cs.cita_id, cs.servicio_id, s.nombre, s.precio_base '
+                . 'FROM cita_servicios cs '
+                . 'JOIN servicios s ON s.id = cs.servicio_id '
+                . " WHERE cs.cita_id IN ({$placeholders})"
+                . ' ORDER BY cs.cita_id, cs.id'
+            );
+            $stmt->execute($ids);
+            $rows = $stmt->fetchAll();
+        } else {
+            $stmt = $this->db->prepare(
+                'SELECT c.id as cita_id, c.servicio_id, s.nombre, s.precio_base '
+                . "FROM {$this->table} c "
+                . 'JOIN servicios s ON s.id = c.servicio_id '
+                . "WHERE c.id IN ({$placeholders})"
+                . ' ORDER BY c.id'
+            );
+            $stmt->execute($ids);
+            $rows = $stmt->fetchAll();
+        }
+
+        $agrupados = [];
+        foreach ($rows as $row) {
+            $agrupados[$row['cita_id']][] = $row;
+        }
+
+        return $agrupados;
+    }
+
+    public function citasConTotales(?int $clienteId = null): array
+    {
+        $sqlBase =
+            'SELECT c.id, c.cliente_id, c.fecha, c.hora_inicio, c.estado, cl.nombre AS cliente, ' .
+            'COALESCE(SUM(s.precio_base), 0) AS total_servicios '
+            . "FROM {$this->table} c "
+            . 'JOIN clientes cl ON cl.id = c.cliente_id ';
+
+        $params = [];
+
+        if ($this->pivotExiste()) {
+            $sqlBase .= 'LEFT JOIN cita_servicios cs ON cs.cita_id = c.id '
+                . 'LEFT JOIN servicios s ON s.id = cs.servicio_id ';
+        } else {
+            $sqlBase .= 'LEFT JOIN servicios s ON s.id = c.servicio_id ';
+        }
+
+        $where = [];
+        if ($clienteId !== null) {
+            $where[] = 'c.cliente_id = :cliente';
+            $params['cliente'] = $clienteId;
+        }
+
+        $where[] = "c.estado != 'cancelada'";
+
+        $sql = $sqlBase;
+        if (!empty($where)) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
+        }
+
+        $sql .= ' GROUP BY c.id, c.cliente_id, c.fecha, c.hora_inicio, c.estado, cl.nombre'
+            . ' ORDER BY c.fecha DESC, c.hora_inicio DESC';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+    
     public function existeConflicto(int $funcionarioId, string $fecha, string $horaInicio, string $horaFin, ?int $excluirId = null): bool
     {
         $sql = "SELECT COUNT(*) FROM {$this->table} WHERE funcionario_id = :funcionario AND fecha = :fecha AND estado != 'cancelada'"
@@ -281,8 +378,35 @@ class Cita extends Model
         }
 
         $stmt = $this->db->query("SHOW TABLES LIKE 'cita_servicios'");
-        $this->pivotExiste = (bool)$stmt->fetchColumn();
+        $existe = (bool)$stmt->fetchColumn();
+
+        if (!$existe) {
+            $this->crearPivot();
+            $stmt = $this->db->query("SHOW TABLES LIKE 'cita_servicios'");
+            $existe = (bool)$stmt->fetchColumn();
+        }
+
+        $this->pivotExiste = $existe;
 
         return $this->pivotExiste;
+    }
+
+    private function crearPivot(): void
+    {
+        $sql = "CREATE TABLE IF NOT EXISTS cita_servicios ("
+            . "id INT AUTO_INCREMENT PRIMARY KEY,"
+            . "cita_id INT NOT NULL,"
+            . "servicio_id INT NOT NULL,"
+            . "created_at TIMESTAMP NULL DEFAULT NULL,"
+            . "updated_at TIMESTAMP NULL DEFAULT NULL,"
+            . "KEY cita_idx (cita_id),"
+            . "KEY servicio_idx (servicio_id)"
+            . ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
+        try {
+            $this->db->exec($sql);
+        } catch (\PDOException $e) {
+            // Si no se puede crear, se devolverá false en pivotExiste.
+        }
     }
 }

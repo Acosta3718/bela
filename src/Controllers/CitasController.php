@@ -29,11 +29,14 @@ class CitasController extends Controller
 
     public function index()
     {
-        $citas = $this->model->all();
+        $fechaIni = Request::get('fecha_ini') ?: date('Y-m-d');
+        $fechaFin = Request::get('fecha_fin') ?: date('Y-m-d');
+
+        $citas = $this->model->entreFechas($fechaIni, $fechaFin);
         $clientes = $this->cliente->all();
         $funcionarios = $this->funcionario->all();
         $serviciosPorCita = $this->model->serviciosPorCita(array_column($citas, 'id'));
-        return $this->view('citas/index', compact('citas', 'clientes', 'funcionarios', 'serviciosPorCita'));
+        return $this->view('citas/index', compact('citas', 'clientes', 'funcionarios', 'serviciosPorCita', 'fechaIni', 'fechaFin'));
     }
 
     public function create()
@@ -58,10 +61,7 @@ class CitasController extends Controller
     public function store()
     {
         $data = Request::all();
-        $serviciosSeleccionados = [];
-        if (!empty($data['servicios']) && is_array($data['servicios'])) {
-            $serviciosSeleccionados = array_values(array_unique(array_filter(array_map('intval', $data['servicios']))));
-        }
+        $serviciosSeleccionados = $this->extraerServiciosSeleccionados($data);
 
         $data['hora_inicio'] = $this->normalizarHora($data['hora_inicio'] ?? null) ?? '';
 
@@ -123,10 +123,7 @@ class CitasController extends Controller
     {
         $id = (int)Request::get('id');
         $data = Request::all();
-        $serviciosSeleccionados = [];
-        if (!empty($data['servicios']) && is_array($data['servicios'])) {
-            $serviciosSeleccionados = array_values(array_unique(array_filter(array_map('intval', $data['servicios']))));
-        }
+        $serviciosSeleccionados = $this->extraerServiciosSeleccionados($data);
 
         $data['hora_inicio'] = $this->normalizarHora($data['hora_inicio'] ?? null) ?? '';
 
@@ -254,5 +251,21 @@ class CitasController extends Controller
             $data['hora_fin'],
             $citaId
         );
+    }
+
+    private function extraerServiciosSeleccionados(array $data): array
+    {
+        $seleccion = [];
+
+        if (!empty($data['servicios']) && is_array($data['servicios'])) {
+            $seleccion = array_values(array_filter($data['servicios'], fn($id) => $id !== ''));
+        }
+
+        // Compatibilidad con formularios que aún envían un único "servicio_id"
+        if (empty($seleccion) && !empty($data['servicio_id'])) {
+            $seleccion[] = $data['servicio_id'];
+        }
+
+        return array_values(array_unique(array_map('intval', $seleccion)));
     }
 }

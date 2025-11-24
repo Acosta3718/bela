@@ -3,6 +3,20 @@
     <h1 class="h3">Citas</h1>
     <a href="<?= url('/citas/crear') ?>" class="btn btn-primary">Agendar</a>
 </div>
+<form class="row g-3 mb-3 align-items-end" method="get" action="<?= url('/citas') ?>">
+    <div class="col-md-3">
+        <label class="form-label">Fecha inicio</label>
+        <input type="date" name="fecha_ini" class="form-control" value="<?= htmlspecialchars($fechaIni ?? date('Y-m-d')) ?>">
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Fecha fin</label>
+        <input type="date" name="fecha_fin" class="form-control" value="<?= htmlspecialchars($fechaFin ?? date('Y-m-d')) ?>">
+    </div>
+    <div class="col-md-3">
+        <button class="btn btn-secondary">Filtrar</button>
+        <a class="btn btn-link" href="<?= url('/citas') ?>">Hoy</a>
+    </div>
+</form>
 <table class="table table-striped">
     <thead>
         <tr>

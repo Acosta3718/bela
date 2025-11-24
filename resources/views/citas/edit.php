@@ -5,4 +5,5 @@
     <button class="btn btn-primary">Actualizar</button>
     <a href="<?= url('/citas') ?>" class="btn btn-link">Cancelar</a>
 </form>
+<?php include __DIR__ . '/modal_nuevo_cliente.php'; ?>
 <?php $content = ob_get_clean(); include __DIR__ . '/../layouts/app.php'; ?>
