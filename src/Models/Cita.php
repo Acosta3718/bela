@@ -309,6 +309,32 @@ class Cita extends Model
         return $agrupados;
     }
 
+    public function infoBasicaPorIds(array $ids): array
+    {
+        $ids = array_values(array_filter(array_map('intval', $ids)));
+
+        if (empty($ids)) {
+            return [];
+        }
+
+        $placeholders = implode(', ', array_fill(0, count($ids), '?'));
+        $stmt = $this->db->prepare(
+            "SELECT c.id, c.fecha, c.hora_inicio, cl.nombre AS cliente "
+            . "FROM {$this->table} c "
+            . 'JOIN clientes cl ON cl.id = c.cliente_id '
+            . "WHERE c.id IN ({$placeholders})"
+        );
+        $stmt->execute($ids);
+        $rows = $stmt->fetchAll();
+
+        $info = [];
+        foreach ($rows as $row) {
+            $info[$row['id']] = $row;
+        }
+
+        return $info;
+    }
+    
     public function citasConTotales(?int $clienteId = null): array
     {
         $sqlBase =

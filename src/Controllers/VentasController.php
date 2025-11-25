@@ -28,7 +28,10 @@ class VentasController extends Controller
     public function index()
     {
         $ventas = $this->model->all();
-        return $this->view('ventas/index', compact('ventas'));
+        $citaIds = array_values(array_filter(array_column($ventas, 'cita_id')));
+        $serviciosPorCita = $this->cita->serviciosConPrecioPorCita($citaIds);
+        $citasInfo = $this->cita->infoBasicaPorIds($citaIds);
+        return $this->view('ventas/index', compact('ventas', 'serviciosPorCita', 'citasInfo'));
     }
 
     public function create()

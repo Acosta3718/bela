@@ -143,16 +143,30 @@
             document.getElementById('estado_pago').value = 'pagado';
             const total = actualizarTotales().total;
             document.getElementById('monto_pagado').value = total;
-            const ticketHtml = armarTicket();
-            if (ticketHtml) {
-                const ventana = window.open('', 'PRINT', 'height=600,width=400');
-                ventana.document.write(ticketHtml);
-                ventana.document.close();
-                ventana.focus();
-                ventana.print();
-                ventana.close();
-            }
+            document.getElementById('venta-form').dataset.cobrar = '1';
             document.getElementById('venta-form').submit();
         });
+
+        const ventaForm = document.getElementById('venta-form');
+        ventaForm.addEventListener('submit', (event) => {
+            if (ventaForm.dataset.enviando === '1') return;
+
+            const quiereCobrar = ventaForm.dataset.cobrar === '1' || document.getElementById('cobrar').value === '1';
+            if (quiereCobrar) {
+                const ticketHtml = armarTicket();
+                if (ticketHtml) {
+                    const ventana = window.open('', 'PRINT', 'height=600,width=400');
+                    ventana.document.write(ticketHtml);
+                    ventana.document.close();
+                    ventana.focus();
+                    ventana.onload = () => {
+                        ventana.print();
+                        ventana.close();
+                    };
+                }
+            }
+
+            ventaForm.dataset.enviando = '1';
+        }, { once: true });
     });
 </script>
