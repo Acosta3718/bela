@@ -335,13 +335,14 @@ class Cita extends Model
         return $info;
     }
     
-    public function citasConTotales(?int $clienteId = null): array
+    public function citasConTotales(?int $clienteId = null, ?int $permitirVentaId = null): array
     {
         $sqlBase =
             'SELECT c.id, c.cliente_id, c.fecha, c.hora_inicio, c.estado, cl.nombre AS cliente, ' .
             'COALESCE(SUM(s.precio_base), 0) AS total_servicios '
             . "FROM {$this->table} c "
-            . 'JOIN clientes cl ON cl.id = c.cliente_id ';
+            . 'JOIN clientes cl ON cl.id = c.cliente_id '
+            . 'LEFT JOIN ventas v ON v.cita_id = c.id ';
 
         $params = [];
 
@@ -359,6 +360,13 @@ class Cita extends Model
         }
 
         $where[] = "c.estado != 'cancelada'";
+
+        if ($permitirVentaId !== null) {
+            $where[] = '(v.id IS NULL OR v.id = :ventaId)';
+            $params['ventaId'] = $permitirVentaId;
+        } else {
+            $where[] = 'v.id IS NULL';
+        }
 
         $sql = $sqlBase;
         if (!empty($where)) {

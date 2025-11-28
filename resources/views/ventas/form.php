@@ -53,7 +53,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p class="mb-1">Total a cobrar: <strong id="total-modal">$0.00</strong></p>
+                <p class="mb-1">Total a cobrar: <strong id="total-modal">GS. 0.00</strong></p>
                 <p class="text-muted">¿Desea registrar el cobro ahora?</p>
             </div>
             <div class="modal-footer">
@@ -61,22 +61,5 @@
                 <button type="button" class="btn btn-success" id="btn-cobrar">Cobrar ahora</button>
             </div>
         </div>
-    </div>
-</div>
-
-<div id="ticket" style="display:none;">
-    <div style="width:280px;font-family:monospace;">
-        <div style="text-align:center;">
-            <h4 style="margin:4px 0;">Bela - Ticket de pago</h4>
-            <div id="ticket-fecha"></div>
-        </div>
-        <hr>
-        <div id="ticket-cliente"></div>
-        <div id="ticket-citas"></div>
-        <hr>
-        <div id="ticket-detalle"></div>
-        <hr>
-        <div id="ticket-totales"></div>
-        <div id="ticket-letras" style="margin-top:6px;"></div>
     </div>
 </div>

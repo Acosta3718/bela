@@ -9,6 +9,7 @@ use App\Controllers\GastosController;
 use App\Controllers\PagosController;
 use App\Controllers\ReportesController;
 use App\Controllers\ServiciosController;
+use App\Controllers\ProveedoresController;
 use App\Controllers\VentasController;
 
 $router->get('/', [DashboardController::class, 'index']);
@@ -40,6 +41,14 @@ $router->get('/clientes/editar', [ClientesController::class, 'edit']);
 $router->post('/clientes/actualizar', [ClientesController::class, 'update']);
 $router->post('/clientes/eliminar', [ClientesController::class, 'destroy']);
 
+$router->get('/proveedores', [ProveedoresController::class, 'index']);
+$router->get('/proveedores/buscar', [ProveedoresController::class, 'buscar']);
+$router->get('/proveedores/crear', [ProveedoresController::class, 'create']);
+$router->post('/proveedores', [ProveedoresController::class, 'store']);
+$router->get('/proveedores/editar', [ProveedoresController::class, 'edit']);
+$router->post('/proveedores/actualizar', [ProveedoresController::class, 'update']);
+$router->post('/proveedores/eliminar', [ProveedoresController::class, 'destroy']);
+
 $router->get('/citas', [CitasController::class, 'index']);
 $router->get('/citas/crear', [CitasController::class, 'create']);
 $router->post('/citas', [CitasController::class, 'store']);
@@ -65,6 +74,7 @@ $router->post('/gastos/eliminar', [GastosController::class, 'destroy']);
 
 $router->get('/pagos', [PagosController::class, 'index']);
 $router->get('/pagos/crear', [PagosController::class, 'create']);
+$router->get('/pagos/ventas', [PagosController::class, 'ventas']);
 $router->post('/pagos', [PagosController::class, 'store']);
 $router->post('/pagos/eliminar', [PagosController::class, 'destroy']);
 

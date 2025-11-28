@@ -27,21 +27,39 @@ class VentasController extends Controller
 
     public function index()
     {
-        $ventas = $this->model->all();
+        $hoy = date('Y-m-d');
+        $fechaIni = Request::get('fecha_ini') ?: $hoy;
+        $fechaFin = Request::get('fecha_fin') ?: $fechaIni;
+
+        if ($fechaIni > $fechaFin) {
+            [$fechaIni, $fechaFin] = [$fechaFin, $fechaIni];
+        }
+
+        $ventas = $this->model->listarConDetalles($fechaIni, $fechaFin);
         $citaIds = array_values(array_filter(array_column($ventas, 'cita_id')));
         $serviciosPorCita = $this->cita->serviciosConPrecioPorCita($citaIds);
         $citasInfo = $this->cita->infoBasicaPorIds($citaIds);
-        return $this->view('ventas/index', compact('ventas', 'serviciosPorCita', 'citasInfo'));
+        return $this->view('ventas/index', compact('ventas', 'serviciosPorCita', 'citasInfo', 'fechaIni', 'fechaFin'));
     }
 
     public function create()
     {
         $clienteId = Request::get('cliente_id');
         $clienteId = $clienteId !== null && $clienteId !== '' ? (int)$clienteId : null;
-        $clientes = $this->cliente->all();
+        $clienteLabel = '';
+        if ($clienteId) {
+            $cliente = $this->cliente->find($clienteId);
+            if ($cliente) {
+                $detalles = array_filter([
+                    $cliente['telefono'] ?? '',
+                    $cliente['email'] ?? '',
+                ]);
+                $clienteLabel = trim($cliente['nombre'] . (!empty($detalles) ? ' · ' . implode(' · ', $detalles) : ''));
+            }
+        }
         $citas = $this->cita->citasConTotales($clienteId);
         $serviciosPorCita = $this->cita->serviciosConPrecioPorCita(array_column($citas, 'id'));
-        return $this->view('ventas/create', compact('citas', 'clientes', 'clienteId', 'serviciosPorCita'));
+        return $this->view('ventas/create', compact('citas', 'clienteId', 'serviciosPorCita', 'clienteLabel'));
     }
 
     public function store()
@@ -71,10 +89,9 @@ class VentasController extends Controller
 
         if ($errors) {
             $citas = $this->cita->citasConTotales();
-            $clientes = $this->cliente->all();
             $venta = $data;
             $venta['cita_ids'] = $citaIds;
-            return $this->view('ventas/create', compact('errors', 'venta', 'citas', 'clientes', 'serviciosPorCita'));
+            return $this->view('ventas/create', compact('errors', 'venta', 'citas', 'serviciosPorCita'));
         }
 
         $data['cita_id'] = $citaIds[0] ?? null;
@@ -91,10 +108,9 @@ class VentasController extends Controller
         $id = (int)Request::get('id');
         $venta = $this->model->find($id);
         $venta['cita_ids'] = [$venta['cita_id'] ?? null];
-        $clientes = $this->cliente->all();
-        $citas = $this->cita->citasConTotales();
+        $citas = $this->cita->citasConTotales(null, $venta['id']);
         $serviciosPorCita = $this->cita->serviciosConPrecioPorCita(array_column($citas, 'id'));
-        return $this->view('ventas/edit', compact('venta', 'citas', 'clientes', 'serviciosPorCita'));
+        return $this->view('ventas/edit', compact('venta', 'citas', 'serviciosPorCita'));
     }
 
     public function update()
@@ -126,9 +142,8 @@ class VentasController extends Controller
         if ($errors) {
             $venta = array_merge($data, ['id' => $id]);
             $venta['cita_ids'] = $citaIds;
-            $citas = $this->cita->citasConTotales();
-            $clientes = $this->cliente->all();
-            return $this->view('ventas/edit', compact('errors', 'venta', 'citas', 'clientes', 'serviciosPorCita'));
+            $citas = $this->cita->citasConTotales(null, $id);
+            return $this->view('ventas/edit', compact('errors', 'venta', 'citas', 'serviciosPorCita'));
         }
 
         $data['cita_id'] = $citaIds[0] ?? null;

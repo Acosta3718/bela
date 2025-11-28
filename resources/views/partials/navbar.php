@@ -9,6 +9,7 @@
                 <li class="nav-item"><a class="nav-link" href="/bela/public/funcionarios">Funcionarios</a></li>
                 <li class="nav-item"><a class="nav-link" href="/bela/public/servicios">Servicios</a></li>
                 <li class="nav-item"><a class="nav-link" href="/bela/public/clientes">Clientes</a></li>
+                <li class="nav-item"><a class="nav-link" href="/bela/public/proveedores">Proveedores</a></li>
                 <li class="nav-item"><a class="nav-link" href="/bela/public/citas">Citas</a></li>
                 <li class="nav-item"><a class="nav-link" href="/bela/public/ventas">Ventas</a></li>
                 <li class="nav-item"><a class="nav-link" href="/bela/public/gastos">Gastos</a></li>

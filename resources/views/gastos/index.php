@@ -8,6 +8,8 @@
         <tr>
             <th>Fecha</th>
             <th>Concepto</th>
+            <th>Proveedor</th>
+            <th>Nro. factura</th>
             <th>Monto</th>
             <th>Notas</th>
             <th></th>
@@ -18,8 +20,10 @@
         <tr>
             <td><?= htmlspecialchars($gasto['fecha']) ?></td>
             <td><?= htmlspecialchars($gasto['concepto']) ?></td>
+            <th>Proveedor</th>
+            <th>Nro. factura</th>
             <td>$<?= number_format((float)$gasto['monto'], 2) ?></td>
-            <td><?= htmlspecialchars($gasto['notas']) ?></td>
+            <td><?= htmlspecialchars($gasto['notas'] ?? '') ?></td>
             <td class="text-end">
                 <a class="btn btn-sm btn-secondary" href="/bela/public/gastos/editar?id=<?= $gasto['id'] ?>">Editar</a>
                 <form action="/bela/public/gastos/eliminar?id=<?= $gasto['id'] ?>" method="post" class="d-inline">
