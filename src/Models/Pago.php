@@ -15,6 +15,7 @@ class Pago extends Model
         'fecha_pago',
         'periodo_inicio',
         'periodo_fin',
-        'notas'
+        'notas',
+        'cuenta_id'
     ];
 }

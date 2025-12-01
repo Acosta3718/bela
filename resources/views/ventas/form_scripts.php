@@ -45,6 +45,7 @@
         const modalElement = document.getElementById('modalCobro');
         const modal = modalElement ? new bootstrap.Modal(modalElement) : null;
         const ventaForm = document.getElementById('venta-form');
+        const cuentaSelect = document.getElementById('cuenta_id');
 
         function submitVenta() {
             if (ventaForm.requestSubmit) {
@@ -74,10 +75,15 @@
             document.getElementById('cobrar').value = 0;
             document.getElementById('estado_pago').value = 'pendiente';
             ventaForm.dataset.cobrar = '0';
+            if (cuentaSelect) cuentaSelect.value = '';
             submitVenta();
         });
 
         document.getElementById('btn-cobrar').addEventListener('click', () => {
+            if (cuentaSelect && !cuentaSelect.value) {
+                alert('Seleccione la cuenta donde se registrará el cobro.');
+                return;
+            }
             document.getElementById('cobrar').value = 1;
             document.getElementById('estado_pago').value = 'pagado';
             const total = actualizarTotales().total;
@@ -90,13 +96,17 @@
             if (ventaForm.dataset.enviando === '1') return;
 
             const quiereCobrar = ventaForm.dataset.cobrar === '1' || document.getElementById('cobrar').value === '1';
+            if (quiereCobrar && cuentaSelect && !cuentaSelect.value) {
+                event.preventDefault();
+                alert('Seleccione la cuenta donde se registrará el cobro.');
+                return;
+            }
             if (quiereCobrar && window.ticketPrinter) {
                 const ticketData = datosTicketSeleccionado();
                 if (ticketData) {
                     window.ticketPrinter.printTicket(ticketData);
                 }
             }
-
             ventaForm.dataset.enviando = '1';
         });
     });

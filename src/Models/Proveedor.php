@@ -17,6 +17,13 @@ class Proveedor extends Model
         'estado',
     ];
 
+    public function activos(): array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE estado = 'activo' ORDER BY nombre");
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
     public function buscar(string $termino, int $limite = 20, bool $soloActivos = false): array
     {
         $termino = trim($termino);

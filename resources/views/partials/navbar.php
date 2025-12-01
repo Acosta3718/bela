@@ -1,3 +1,4 @@
+<?php use App\Core\Auth; $roles = array_map('strtolower', Auth::roles()); $esAdmin = in_array('administrador', $roles) || in_array('admin', $roles); ?>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="/bela/public">SalonPro</a>
@@ -14,6 +15,9 @@
                 <li class="nav-item"><a class="nav-link" href="/bela/public/ventas">Ventas</a></li>
                 <li class="nav-item"><a class="nav-link" href="/bela/public/gastos">Gastos</a></li>
                 <li class="nav-item"><a class="nav-link" href="/bela/public/pagos">Pagos</a></li>
+                <?php if ($esAdmin): ?>
+                    <li class="nav-item"><a class="nav-link" href="/bela/public/cuentas">Cuentas</a></li>
+                <?php endif; ?>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Reportes</a>
                     <ul class="dropdown-menu">

@@ -55,6 +55,18 @@
             <div class="modal-body">
                 <p class="mb-1">Total a cobrar: <strong id="total-modal">GS. 0.00</strong></p>
                 <p class="text-muted">¿Desea registrar el cobro ahora?</p>
+                <div class="mt-3">
+                    <label class="form-label">Cuenta de ingreso</label>
+                    <select name="cuenta_id" id="cuenta_id" class="form-select">
+                        <option value="">Seleccione</option>
+                        <?php foreach ($cuentas ?? [] as $cuenta): ?>
+                            <option value="<?= $cuenta['id'] ?>" <?= ($venta['cuenta_id'] ?? '') == $cuenta['id'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($cuenta['nombre']) ?> ($<?= number_format((float)$cuenta['saldo'], 2) ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <?php if (!empty($errors['cuenta_id'])): ?><div class="text-danger small"><?= implode(', ', $errors['cuenta_id']) ?></div><?php endif; ?>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="btn-guardar-sin-cobrar">Guardar sin cobrar</button>

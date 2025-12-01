@@ -10,6 +10,7 @@ use App\Controllers\PagosController;
 use App\Controllers\ReportesController;
 use App\Controllers\ServiciosController;
 use App\Controllers\ProveedoresController;
+use App\Controllers\CuentasController;
 use App\Controllers\VentasController;
 
 $router->get('/', [DashboardController::class, 'index']);
@@ -48,6 +49,13 @@ $router->post('/proveedores', [ProveedoresController::class, 'store']);
 $router->get('/proveedores/editar', [ProveedoresController::class, 'edit']);
 $router->post('/proveedores/actualizar', [ProveedoresController::class, 'update']);
 $router->post('/proveedores/eliminar', [ProveedoresController::class, 'destroy']);
+
+$router->get('/cuentas', [CuentasController::class, 'index']);
+$router->get('/cuentas/crear', [CuentasController::class, 'create']);
+$router->post('/cuentas', [CuentasController::class, 'store']);
+$router->get('/cuentas/editar', [CuentasController::class, 'edit']);
+$router->post('/cuentas/actualizar', [CuentasController::class, 'update']);
+$router->post('/cuentas/eliminar', [CuentasController::class, 'destroy']);
 
 $router->get('/citas', [CitasController::class, 'index']);
 $router->get('/citas/crear', [CitasController::class, 'create']);

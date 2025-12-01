@@ -64,8 +64,20 @@
             <input type="date" name="fecha_pago" class="form-control" value="<?= htmlspecialchars($pago['fecha_pago'] ?? date('Y-m-d')) ?>">
             <?php if (!empty($errors['fecha_pago'])): ?><div class="text-danger small"><?= implode(', ', $errors['fecha_pago']) ?></div><?php endif; ?>
         </div>
+        <div class="col-md-4">
+            <label class="form-label">Cuenta de egreso</label>
+            <select name="cuenta_id" class="form-select">
+                <option value="">Seleccione</option>
+                <?php foreach ($cuentas ?? [] as $cuenta): ?>
+                    <option value="<?= $cuenta['id'] ?>" <?= ($pago['cuenta_id'] ?? '') == $cuenta['id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($cuenta['nombre']) ?> ($<?= number_format((float)$cuenta['saldo'], 2) ?>)
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <?php if (!empty($errors['cuenta_id'])): ?><div class="text-danger small"><?= implode(', ', $errors['cuenta_id']) ?></div><?php endif; ?>
+        </div>
     </div>
-
+    
     <div class="mb-3 mt-3">
         <label class="form-label">Notas</label>
         <textarea name="notas" class="form-control" rows="3"><?= htmlspecialchars($pago['notas'] ?? '') ?></textarea>

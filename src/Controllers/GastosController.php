@@ -21,8 +21,19 @@ class GastosController extends Controller
 
     public function index()
     {
-        $gastos = $this->model->allConProveedor();
-        return $this->view('gastos/index', compact('gastos'));
+        $fechaIni = Request::get('fecha_ini');
+        $fechaFin = Request::get('fecha_fin');
+        $proveedorId = Request::get('proveedor_id');
+        $proveedorId = $proveedorId !== null && $proveedorId !== '' ? (int)$proveedorId : null;
+
+        if ($fechaIni && $fechaFin && $fechaIni > $fechaFin) {
+            [$fechaIni, $fechaFin] = [$fechaFin, $fechaIni];
+        }
+
+        $gastos = $this->model->filtrar($fechaIni, $fechaFin, $proveedorId);
+        $proveedores = $this->proveedor->activos();
+
+        return $this->view('gastos/index', compact('gastos', 'fechaIni', 'fechaFin', 'proveedorId', 'proveedores'));
     }
 
     public function create()

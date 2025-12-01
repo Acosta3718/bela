@@ -13,7 +13,8 @@ class Venta extends Model
         'monto_total',
         'descuento',
         'monto_pagado',
-        'estado_pago'
+        'estado_pago',
+        'cuenta_id'
     ];
 
     public function listarConDetalles(?string $desde, ?string $hasta): array
@@ -84,7 +85,7 @@ class Venta extends Model
         return $stmt->fetchAll();
     }
 
-    public function registrarCobro(int $ventaId, float $monto): bool
+    public function registrarCobro(int $ventaId, float $monto, ?int $cuentaId = null): bool
     {
         $venta = $this->find($ventaId);
         if (!$venta) {
@@ -94,7 +95,8 @@ class Venta extends Model
         $estado = $nuevoMonto >= (float)$venta['monto_total'] ? 'pagado' : 'pendiente';
         return $this->update($ventaId, [
             'monto_pagado' => $nuevoMonto,
-            'estado_pago' => $estado
+            'estado_pago' => $estado,
+            'cuenta_id' => $cuentaId ?? $venta['cuenta_id'] ?? null,
         ]);
     }
 }
