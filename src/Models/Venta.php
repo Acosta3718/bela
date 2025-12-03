@@ -55,7 +55,8 @@ class Venta extends Model
             . 'FROM ventas v '
             . 'JOIN citas c ON c.id = v.cita_id '
             . 'JOIN funcionarios f ON f.id = c.funcionario_id '
-            . "WHERE v.estado_pago = 'pagado' AND c.funcionario_id = :funcionario";
+            . 'LEFT JOIN pagos pg ON pg.venta_id = v.id '
+            . "WHERE v.estado_pago = 'pagado' AND c.funcionario_id = :funcionario AND pg.id IS NULL";
 
         if (!empty($desde)) {
             $sql .= ' AND c.fecha >= :desde';

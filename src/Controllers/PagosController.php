@@ -45,7 +45,7 @@ class PagosController extends Controller
             $ventas = $this->venta->pagadasParaPago($funcionarioId, $periodoInicio, $periodoFin);
         }
 
-        return $this->view('pagos/create', compact('funcionarios', 'ventas', 'funcionarioId', 'periodoInicio', 'periodoFin'));
+        return $this->view('pagos/create', compact('funcionarios', 'ventas', 'funcionarioId', 'periodoInicio', 'periodoFin', 'cuentas'));
     }
 
     public function store()
@@ -93,6 +93,15 @@ class PagosController extends Controller
             return $this->view('pagos/create', compact('errors', 'pago', 'funcionarios', 'ventas', 'cuentas'));
         }
 
+        if (count($ventasPagadas) < count($ventaIds)) {
+            $errors['venta_ids'][] = 'Algunas ventas seleccionadas ya fueron liquidadas en un pago previo y no pueden volver a cobrarse.';
+            $funcionarios = $this->funcionario->activos();
+            $ventas = $this->venta->pagadasParaPago($funcionarioId, $data['periodo_inicio'], $data['periodo_fin']);
+            $pago = $data;
+            $cuentas = $this->cuenta->activos();
+            return $this->view('pagos/create', compact('errors', 'pago', 'funcionarios', 'ventas', 'cuentas'));
+        }
+
         $totalPagar = 0;
         $pagosARegistrar = [];
         foreach ($ventasPagadas as $venta) {
@@ -113,6 +122,17 @@ class PagosController extends Controller
             ];
         }
 
+        if ($cuenta && $totalPagar > (float)$cuenta['saldo']) {
+            $errors['cuenta_id'][] = 'La cuenta seleccionada no tiene saldo suficiente para cubrir el pago.';
+            $funcionarios = $this->funcionario->activos();
+            $ventas = $funcionarioId
+                ? $this->venta->pagadasParaPago($funcionarioId, $data['periodo_inicio'] ?? null, $data['periodo_fin'] ?? null)
+                : [];
+            $pago = $data;
+            $cuentas = $this->cuenta->activos();
+            return $this->view('pagos/create', compact('errors', 'pago', 'funcionarios', 'ventas', 'cuentas'));
+        }
+        
         if ($totalPagar > 0 && !$this->cuenta->retirar($cuentaId, $totalPagar)) {
             $errors['cuenta_id'][] = 'La cuenta seleccionada no tiene saldo suficiente.';
             $funcionarios = $this->funcionario->activos();

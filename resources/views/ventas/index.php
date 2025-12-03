@@ -35,9 +35,9 @@
         <tr>
             <td>#<?= htmlspecialchars($venta['cita_id']) ?></td>
             <td><?= htmlspecialchars($venta['cliente'] ?? 'N/A') ?></td>
-            <td>Gs <?= number_format((float)$venta['monto_total'], 2) ?></td>
-            <td>Gs <?= number_format((float)$venta['descuento'], 2) ?></td>
-            <td>Gs <?= number_format((float)$venta['monto_pagado'], 2) ?></td>
+            <td>Gs <?= number_format((float)$venta['monto_total'], 0, ',', '.') ?></td>
+            <td>Gs <?= number_format((float)$venta['descuento'], 0, ',', '.') ?></td>
+            <td>Gs <?= number_format((float)$venta['monto_pagado'], 0, ',', '.') ?></td>
             <td><?= htmlspecialchars($venta['estado_pago']) ?></td>
             <td class="text-end">
                 <a class="btn btn-sm btn-secondary" href="<?= url('/ventas/editar?id=' . $venta['id']) ?>">Editar</a>

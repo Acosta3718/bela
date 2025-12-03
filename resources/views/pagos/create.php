@@ -55,8 +55,8 @@
     <div class="row g-3">
         <div class="col-md-4">
             <label class="form-label">Monto a pagar</label>
-            <input type="number" step="0.01" name="monto" id="monto" class="form-control" value="<?= htmlspecialchars($pago['monto'] ?? '') ?>" readonly>
-            <div class="form-text">Suma de las comisiones de las ventas seleccionadas.</div>
+            <input type="number" step="1" name="monto" id="monto" class="form-control" value="<?= htmlspecialchars($pago['monto'] ?? '') ?>" readonly>
+            <div class="form-text">Suma de las comisiones de las ventas seleccionadas en Guaraníes (Gs) sin decimales.</div>
             <?php if (!empty($errors['monto'])): ?><div class="text-danger small"><?= implode(', ', $errors['monto']) ?></div><?php endif; ?>
         </div>
         <div class="col-md-4">
@@ -66,14 +66,16 @@
         </div>
         <div class="col-md-4">
             <label class="form-label">Cuenta de egreso</label>
-            <select name="cuenta_id" class="form-select">
+            <select name="cuenta_id" id="cuenta_id" class="form-select">
                 <option value="">Seleccione</option>
                 <?php foreach ($cuentas ?? [] as $cuenta): ?>
                     <option value="<?= $cuenta['id'] ?>" <?= ($pago['cuenta_id'] ?? '') == $cuenta['id'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($cuenta['nombre']) ?> ($<?= number_format((float)$cuenta['saldo'], 2) ?>)
+                        <?= htmlspecialchars($cuenta['nombre']) ?> (Gs <?= number_format((float)$cuenta['saldo'], 0, ',', '.') ?>)
                     </option>
                 <?php endforeach; ?>
             </select>
+            <div class="form-text" id="saldo-info">Seleccione una cuenta para ver el saldo disponible.</div>
+            <div class="text-danger small d-none" id="saldo-error"></div>
             <?php if (!empty($errors['cuenta_id'])): ?><div class="text-danger small"><?= implode(', ', $errors['cuenta_id']) ?></div><?php endif; ?>
         </div>
     </div>
@@ -94,12 +96,17 @@
         const inicioInput = document.getElementById('periodo_inicio');
         const finInput = document.getElementById('periodo_fin');
         const filtrarBtn = document.getElementById('filtrar-ventas');
+        const cuentaSelect = document.getElementById('cuenta_id');
+        const saldoInfo = document.getElementById('saldo-info');
+        const saldoError = document.getElementById('saldo-error');
+        const form = document.getElementById('pago-form');
         const ventasIniciales = <?= json_encode($ventasIniciales) ?>;
         const seleccionInicial = new Set(<?= json_encode(array_map('intval', $seleccionadas)) ?>);
+        const cuentasDisponibles = <?= json_encode($cuentas ?? []) ?>;
 
         function toMoney(number) {
             const value = Number(number || 0);
-            return value.toLocaleString('es-PY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return value.toLocaleString('es-PY', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
 
         function calcularComision(venta) {
@@ -110,7 +117,7 @@
             return {
                 base,
                 porcentaje,
-                comision: base * (porcentaje / 100),
+                comision: Math.round(base * (porcentaje / 100)),
             };
         }
 
@@ -126,6 +133,26 @@
                 return;
             }
 
+            const header = document.createElement('div');
+            header.className = 'd-flex justify-content-between align-items-center mb-2';
+            const selectAllWrapper = document.createElement('div');
+            selectAllWrapper.className = 'form-check mb-0';
+
+            const selectAll = document.createElement('input');
+            selectAll.type = 'checkbox';
+            selectAll.className = 'form-check-input';
+            selectAll.id = 'select-all-ventas';
+
+            const selectAllLabel = document.createElement('label');
+            selectAllLabel.className = 'form-check-label';
+            selectAllLabel.setAttribute('for', selectAll.id);
+            selectAllLabel.textContent = 'Marcar todas las ventas';
+
+            selectAllWrapper.appendChild(selectAll);
+            selectAllWrapper.appendChild(selectAllLabel);
+            header.appendChild(selectAllWrapper);
+            ventasContainer.appendChild(header);
+
             listado.forEach((venta) => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'form-check';
@@ -139,20 +166,40 @@
                 input.id = `venta-${venta.id}`;
                 input.dataset.comision = infoComision.comision;
                 input.checked = seleccionInicial.has(venta.id);
-                input.addEventListener('change', actualizarMonto);
+                input.addEventListener('change', () => {
+                    sincronizarSelectTodas();
+                    actualizarMonto();
+                });
 
                 const label = document.createElement('label');
                 label.className = 'form-check-label';
                 label.setAttribute('for', input.id);
                 const fecha = venta.cita_fecha ? ` - ${venta.cita_fecha}` : '';
-                label.textContent = `Venta #${venta.id}${fecha} · Venta $${toMoney(infoComision.base)} · Comisión ${infoComision.porcentaje}%: $${toMoney(infoComision.comision)}`;
+                label.textContent = `Venta #${venta.id}${fecha} · Venta Gs ${toMoney(infoComision.base)} · Comisión ${infoComision.porcentaje}%: Gs ${toMoney(infoComision.comision)}`;
 
                 wrapper.appendChild(input);
                 wrapper.appendChild(label);
                 ventasContainer.appendChild(wrapper);
             });
 
+            selectAll.addEventListener('change', () => {
+                const todas = ventasContainer.querySelectorAll('.venta-option');
+                todas.forEach((cb) => {
+                    cb.checked = selectAll.checked;
+                });
+                actualizarMonto();
+            });
+
+            sincronizarSelectTodas();
             actualizarMonto();
+        }
+
+        function sincronizarSelectTodas() {
+            const selectAll = document.getElementById('select-all-ventas');
+            if (!selectAll) return;
+            const ventas = ventasContainer.querySelectorAll('.venta-option');
+            const marcadas = ventasContainer.querySelectorAll('.venta-option:checked');
+            selectAll.checked = ventas.length > 0 && ventas.length === marcadas.length;
         }
 
         function actualizarMonto() {
@@ -161,7 +208,38 @@
             checks.forEach((cb) => {
                 total += Number(cb.dataset.comision || 0);
             });
-            montoInput.value = total ? total.toFixed(2) : '';
+            montoInput.value = total ? Math.round(total) : '';
+            validarSaldoDisponible();
+        }
+
+        function obtenerSaldoSeleccionado() {
+            const seleccion = cuentaSelect.value;
+            if (!seleccion) return null;
+            const cuenta = cuentasDisponibles.find((item) => String(item.id) === String(seleccion));
+            if (!cuenta) return null;
+            return Number(cuenta.saldo || 0);
+        }
+
+        function validarSaldoDisponible() {
+            const saldo = obtenerSaldoSeleccionado();
+            const monto = Number(montoInput.value || 0);
+            saldoError.classList.add('d-none');
+
+            if (saldo === null) {
+                saldoInfo.textContent = 'Seleccione una cuenta activa para registrar el pago.';
+                return false;
+            }
+
+            const saldoPosterior = saldo - monto;
+            saldoInfo.textContent = `Saldo disponible: Gs ${toMoney(saldo)} · Saldo luego del pago: Gs ${toMoney(saldoPosterior)}`;
+
+            if (monto > saldo) {
+                saldoError.textContent = 'El monto a pagar supera el saldo disponible en la cuenta seleccionada.';
+                saldoError.classList.remove('d-none');
+                return false;
+            }
+
+            return true;
         }
 
         function construirQuery() {
@@ -203,10 +281,20 @@
             seleccionInicial.clear();
         });
 
+        cuentaSelect.addEventListener('change', validarSaldoDisponible);
+        form.addEventListener('submit', (event) => {
+            if (!validarSaldoDisponible()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        });
+
         renderVentas(ventasIniciales);
         if (!ventasIniciales.length && funcionarioSelect.value && inicioInput.value && finInput.value) {
             cargarVentas();
         }
+
+        validarSaldoDisponible();
     })();
 </script>
 <?php $content = ob_get_clean(); include __DIR__ . '/../layouts/app.php'; ?>

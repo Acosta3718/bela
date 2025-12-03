@@ -21,7 +21,15 @@
 </div>
 <div class="mb-3">
     <label class="form-label">Rol</label>
-    <input type="text" name="rol" class="form-control" value="<?= htmlspecialchars($funcionario['rol'] ?? '') ?>">
+    <?php $rolesDisponibles = ['Administrador', 'Admin', 'Funcionario']; ?>
+    <select name="rol" class="form-select">
+        <option value="">Seleccione</option>
+        <?php foreach ($rolesDisponibles as $rol): ?>
+            <option value="<?= htmlspecialchars($rol) ?>" <?= (($funcionario['rol'] ?? '') === $rol) ? 'selected' : '' ?>>
+                <?= htmlspecialchars($rol) ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
     <?php if (!empty($errors['rol'])): ?><div class="text-danger small"><?= implode(', ', $errors['rol']) ?></div><?php endif; ?>
 </div>
 <div class="mb-3">

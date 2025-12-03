@@ -17,7 +17,7 @@
         <?php foreach ($cuentas as $cuenta): ?>
         <tr>
             <td><?= htmlspecialchars($cuenta['nombre']) ?></td>
-            <td>$<?= number_format((float)($cuenta['saldo'] ?? 0), 2) ?></td>
+            <td>Gs <?= number_format((float)($cuenta['saldo'] ?? 0), 0, ',', '.') ?></td>
             <td><?= ($cuenta['activo'] ?? 0) ? 'Activa' : 'Inactiva' ?></td>
             <td><?= htmlspecialchars($cuenta['notas'] ?? '') ?></td>
             <td class="text-end">

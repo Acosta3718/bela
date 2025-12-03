@@ -17,12 +17,15 @@
                 <li class="nav-item"><a class="nav-link" href="/bela/public/pagos">Pagos</a></li>
                 <?php if ($esAdmin): ?>
                     <li class="nav-item"><a class="nav-link" href="/bela/public/cuentas">Cuentas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/bela/public/transferencias">Transferencias</a></li>
                 <?php endif; ?>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Reportes</a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="/bela/public/reportes/ganancias">Ganancias</a></li>
                         <li><a class="dropdown-item" href="/bela/public/reportes/pagos">Pagos Funcionarios</a></li>
+                        <li><a class="dropdown-item" href="/bela/public/reportes/extracto-cuentas">Extracto de cuentas</a></li>
+                        <li><a class="dropdown-item" href="/bela/public/reportes/disponibilidad">Disponibilidad por días</a></li>
                     </ul>
                 </li>
             </ul>

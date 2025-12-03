@@ -1,7 +1,9 @@
 <script>
     const citaServicios = <?= json_encode($serviciosPorCita ?? []) ?>;
     const ticketUtils = window.ticketPrinter || {};
-    const toMoney = ticketUtils.toMoney || function (number) { return Number(number || 0).toFixed(2); };
+    const toMoney = ticketUtils.toMoney || function (number) {
+        return Number(number || 0).toLocaleString('es-PY', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    };
 
     function actualizarTotales() {
         const checkboxes = document.querySelectorAll('.cita-option');
@@ -11,13 +13,14 @@
                 subtotal += parseFloat(cb.dataset.total || 0);
             }
         });
-        const descuento = parseFloat(document.getElementById('descuento').value || 0);
-        const total = Math.max(0, subtotal - descuento);
-        document.getElementById('subtotal').value = toMoney(subtotal);
+        const descuento = Math.round(parseFloat(document.getElementById('descuento').value || 0));
+        const subtotalRedondeado = Math.round(subtotal);
+        const total = Math.max(0, subtotalRedondeado - descuento);
+        document.getElementById('subtotal').value = toMoney(subtotalRedondeado);
         document.getElementById('monto_total_visible').value = toMoney(total);
         document.getElementById('monto_total').value = total;
-        document.getElementById('total-modal').innerText = '$' + toMoney(total);
-        return { subtotal, total, descuento };
+        document.getElementById('total-modal').innerText = 'Gs ' + toMoney(total);
+        return { subtotal: subtotalRedondeado, total, descuento };
     }
 
     function datosTicketSeleccionado() {

@@ -19,7 +19,7 @@
         <?php $funcionario = array_values(array_filter($funcionarios, fn($f) => $f['id'] == $pago['funcionario_id']))[0] ?? null; ?>
         <tr>
             <td><?= htmlspecialchars($funcionario['nombre'] ?? 'N/A') ?></td>
-            <td>$<?= number_format((float)$pago['monto'], 2) ?></td>
+            <td>Gs <?= number_format((float)$pago['monto'], 0, ',', '.') ?></td>
             <td><?= htmlspecialchars($pago['fecha_pago']) ?></td>
             <td><?= htmlspecialchars($pago['periodo_inicio']) ?> - <?= htmlspecialchars($pago['periodo_fin']) ?></td>
             <td><?= htmlspecialchars($pago['notas']) ?></td>

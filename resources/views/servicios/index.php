@@ -18,7 +18,7 @@
         <tr>
             <td><?= htmlspecialchars($servicio['nombre']) ?></td>
             <td><?= htmlspecialchars($servicio['duracion_minutos']) ?></td>
-            <td><?= htmlspecialchars($servicio['precio_base']) ?></td>
+            <td>Gs <?= number_format((float)($servicio['precio_base'] ?? 0), 0, ',', '.') ?></td>
             <td><?= $servicio['activo'] ? 'Sí' : 'No' ?></td>
             <td class="text-end">
                 <a class="btn btn-sm btn-secondary" href="/bela/public/servicios/editar?id=<?= $servicio['id'] ?>">Editar</a>

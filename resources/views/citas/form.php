@@ -33,7 +33,7 @@ $formatPrecio = function ($valor) {
     if ($valor === null || $valor === '') {
         return '—';
     }
-    return '$' . number_format((float)$valor, 0, ',', '.');
+    return 'Gs ' . number_format((float)$valor, 0, ',', '.');
 };
 ?>
 <div class="mb-3 position-relative">

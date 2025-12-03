@@ -14,7 +14,8 @@
 </div>
 <div class="mb-3">
     <label class="form-label">Precio base</label>
-    <input type="number" name="precio_base" step="0.01" class="form-control" value="<?= htmlspecialchars($servicio['precio_base'] ?? '') ?>">
+    <input type="number" name="precio_base" step="1" class="form-control" value="<?= htmlspecialchars($servicio['precio_base'] ?? '') ?>">
+    <div class="form-text">Ingresar el valor en Gs sin decimales.</div>
     <?php if (!empty($errors['precio_base'])): ?><div class="text-danger small"><?= implode(', ', $errors['precio_base']) ?></div><?php endif; ?>
 </div>
 <div class="form-check form-switch mb-3">

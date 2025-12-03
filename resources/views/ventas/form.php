@@ -6,7 +6,13 @@
                 $checked = in_array($item['id'], $venta['cita_ids'] ?? []);
                 $hora = substr($item['hora_inicio'] ?? '', 0, 5);
                 $totalServicios = (float)($item['total_servicios'] ?? 0);
-                $etiqueta = sprintf('%s %s - %s ($%0.2f)', $item['fecha'], $hora, $item['cliente'], $totalServicios);
+                $etiqueta = sprintf(
+                    '%s %s - %s (Gs %s)',
+                    $item['fecha'],
+                    $hora,
+                    $item['cliente'],
+                    number_format($totalServicios, 0, ',', '.')
+                );
             ?>
             <div class="form-check">
                 <input class="form-check-input cita-option" id="cita-<?= $item['id'] ?>" type="checkbox" name="cita_ids[]" value="<?= $item['id'] ?>"
@@ -28,7 +34,7 @@
     </div>
     <div class="col-md-4">
         <label class="form-label">Descuento</label>
-        <input type="number" step="0.01" name="descuento" id="descuento" class="form-control" value="<?= htmlspecialchars($venta['descuento'] ?? '0') ?>">
+        <input type="number" step="1" name="descuento" id="descuento" class="form-control" value="<?= htmlspecialchars($venta['descuento'] ?? '0') ?>">
         <?php if (!empty($errors['descuento'])): ?><div class="text-danger small"><?= implode(', ', $errors['descuento']) ?></div><?php endif; ?>
     </div>
     <div class="col-md-4">
@@ -53,7 +59,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p class="mb-1">Total a cobrar: <strong id="total-modal">GS. 0.00</strong></p>
+                <p class="mb-1">Total a cobrar: <strong id="total-modal">GS. 0</strong></p>
                 <p class="text-muted">¿Desea registrar el cobro ahora?</p>
                 <div class="mt-3">
                     <label class="form-label">Cuenta de ingreso</label>
@@ -61,7 +67,7 @@
                         <option value="">Seleccione</option>
                         <?php foreach ($cuentas ?? [] as $cuenta): ?>
                             <option value="<?= $cuenta['id'] ?>" <?= ($venta['cuenta_id'] ?? '') == $cuenta['id'] ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($cuenta['nombre']) ?> ($<?= number_format((float)$cuenta['saldo'], 2) ?>)
+                                <?= htmlspecialchars($cuenta['nombre']) ?> (Gs <?= number_format((float)$cuenta['saldo'], 0, ',', '.') ?>)
                             </option>
                         <?php endforeach; ?>
                     </select>

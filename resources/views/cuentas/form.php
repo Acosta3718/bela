@@ -6,8 +6,8 @@
 <div class="row g-3">
     <div class="col-md-4">
         <label class="form-label">Saldo</label>
-        <input type="number" step="0.01" name="saldo" class="form-control" value="<?= htmlspecialchars($cuenta['saldo'] ?? '0') ?>">
-        <?php if (!empty($errors['saldo'])): ?><div class="text-danger small"><?= implode(', ', $errors['saldo']) ?></div><?php endif; ?>
+        <input type="number" step="1" name="saldo" class="form-control" value="<?= htmlspecialchars($cuenta['saldo'] ?? '0') ?>">
+        <div class="form-text">Saldo inicial en Gs con separador de miles y sin decimales.</div>
     </div>
     <div class="col-md-4">
         <label class="form-label">Estado</label>

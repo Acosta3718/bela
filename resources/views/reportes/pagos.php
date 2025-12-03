@@ -26,14 +26,14 @@
         <?php $total += (float)$pago['comision']; ?>
         <tr>
             <td><?= htmlspecialchars($pago['nombre']) ?></td>
-            <td>$<?= number_format((float)$pago['comision'], 2) ?></td>
+            <td>Gs <?= number_format((float)$pago['comision'], 0, ',', '.') ?></td>
         </tr>
         <?php endforeach; ?>
     </tbody>
     <tfoot>
         <tr>
             <th>Total</th>
-            <th>$<?= number_format($total, 2) ?></th>
+            <td>Gs <?= number_format((float)$pago['comision'], 0, ',', '.') ?></td>
         </tr>
     </tfoot>
 </table>

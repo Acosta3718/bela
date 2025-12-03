@@ -6,6 +6,7 @@ use App\Core\Controller;
 use App\Core\Request;
 use App\Core\Validator;
 use App\Models\Funcionario;
+use PDOException;
 
 class FuncionariosController extends Controller
 {
@@ -47,7 +48,14 @@ class FuncionariosController extends Controller
 
             $data['activo'] = isset($data['activo']) ? 1 : 0;
             $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
-            $this->model->create($data);
+            try {
+                $this->model->create($data);
+            } catch (PDOException $e) {
+                $funcionario = $data;
+                unset($funcionario['password']);
+                $errors['email'][] = 'No se pudo guardar el funcionario. Verifique que el correo no exista y vuelva a intentarlo.';
+                return $this->view('funcionarios/create', compact('errors', 'funcionario'));
+            }
             return $this->redirect('/funcionarios');
         }
 
@@ -89,7 +97,14 @@ class FuncionariosController extends Controller
             } else {
                 unset($data['password']);
             }
-            $this->model->update($id, $data);
+            try {
+                $this->model->update($id, $data);
+            } catch (PDOException $e) {
+                $funcionario = array_merge($data, ['id' => $id]);
+                unset($funcionario['password']);
+                $errors['email'][] = 'No se pudo actualizar el funcionario. Verifique que el correo sea único y los datos sean válidos.';
+                return $this->view('funcionarios/edit', compact('errors', 'funcionario'));
+            }
             return $this->redirect('/funcionarios');
         }
 

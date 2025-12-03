@@ -27,16 +27,16 @@
         <?php $totalIngresos += (float)$fila['ingresos']; $totalCobrado += (float)$fila['cobrado']; ?>
         <tr>
             <td><?= htmlspecialchars($fila['fecha']) ?></td>
-            <td>$<?= number_format((float)$fila['ingresos'], 2) ?></td>
-            <td>$<?= number_format((float)$fila['cobrado'], 2) ?></td>
+            <td>Gs <?= number_format((float)$fila['ingresos'], 0, ',', '.') ?></td>
+            <td>Gs <?= number_format((float)$fila['cobrado'], 0, ',', '.') ?></td>
         </tr>
         <?php endforeach; ?>
     </tbody>
     <tfoot>
         <tr>
             <th>Total</th>
-            <th>$<?= number_format($totalIngresos, 2) ?></th>
-            <th>$<?= number_format($totalCobrado, 2) ?></th>
+            <th>Gs <?= number_format($totalIngresos, 0, ',', '.') ?></th>
+        <th>Gs <?= number_format($totalCobrado, 0, ',', '.') ?></th>
         </tr>
     </tfoot>
 </table>

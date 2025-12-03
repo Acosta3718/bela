@@ -12,6 +12,7 @@ use App\Controllers\ServiciosController;
 use App\Controllers\ProveedoresController;
 use App\Controllers\CuentasController;
 use App\Controllers\VentasController;
+use App\Controllers\TransferenciasController;
 
 $router->get('/', [DashboardController::class, 'index']);
 
@@ -86,5 +87,15 @@ $router->get('/pagos/ventas', [PagosController::class, 'ventas']);
 $router->post('/pagos', [PagosController::class, 'store']);
 $router->post('/pagos/eliminar', [PagosController::class, 'destroy']);
 
+$router->get('/transferencias', [TransferenciasController::class, 'index']);
+$router->get('/transferencias/crear', [TransferenciasController::class, 'create']);
+$router->post('/transferencias', [TransferenciasController::class, 'store']);
+$router->get('/transferencias/ver', [TransferenciasController::class, 'show']);
+$router->get('/transferencias/editar', [TransferenciasController::class, 'edit']);
+$router->post('/transferencias/actualizar', [TransferenciasController::class, 'update']);
+$router->post('/transferencias/eliminar', [TransferenciasController::class, 'destroy']);
+
 $router->get('/reportes/ganancias', [ReportesController::class, 'ganancias']);
 $router->get('/reportes/pagos', [ReportesController::class, 'pagosFuncionarios']);
+$router->get('/reportes/extracto-cuentas', [ReportesController::class, 'extractoCuentas']);
+$router->get('/reportes/disponibilidad', [ReportesController::class, 'disponibilidadPorDias']);

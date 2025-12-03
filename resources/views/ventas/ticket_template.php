@@ -39,7 +39,7 @@
         const template = document.getElementById('ticket-template');
 
         function toMoney(number) {
-            return Number(number || 0).toFixed(2);
+            return Number(number || 0).toLocaleString('es-PY', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
 
         function numeroALetras(num) {
@@ -95,7 +95,7 @@
             let subtotal = 0;
             const filas = servicios.map(serv => {
                 subtotal += parseFloat(serv.precio_base || 0);
-                return `<tr><td>${serv.nombre}</td><td style="text-align:right;">$${toMoney(serv.precio_base)}</td></tr>`;
+                return `<tr><td>${serv.nombre}</td><td style="text-align:right;">Gs {toMoney(serv.precio_base)}</td></tr>`;
             });
 
             const totalCalculado = Math.max(0, subtotal - descuento);
