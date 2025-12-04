@@ -21,7 +21,7 @@
 </div>
 <div class="mb-3">
     <label class="form-label">Rol</label>
-    <?php $rolesDisponibles = ['Administrador', 'Admin', 'Funcionario']; ?>
+    <?php $rolesDisponibles = ['Administrador', 'admin', 'Funcionario']; ?>
     <select name="rol" class="form-select">
         <option value="">Seleccione</option>
         <?php foreach ($rolesDisponibles as $rol): ?>

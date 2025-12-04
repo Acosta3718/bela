@@ -18,6 +18,22 @@ class Funcionario extends Model
         'password'
     ];
 
+    public function existeEmail(string $email, ?int $excluirId = null): bool
+    {
+        $sql = "SELECT COUNT(*) FROM {$this->table} WHERE LOWER(email) = :email";
+        $params = ['email' => strtolower(trim($email))];
+
+        if ($excluirId !== null) {
+            $sql .= ' AND id != :id';
+            $params['id'] = $excluirId;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return (int)$stmt->fetchColumn() > 0;
+    }
+
     public function activos(): array
     {
         $stmt = $this->db->query("SELECT * FROM {$this->table} WHERE activo = 1 ORDER BY nombre");

@@ -31,6 +31,7 @@ class FuncionariosController extends Controller
         public function store()
         {
             $data = Request::all();
+            $data['email'] = strtolower(trim($data['email'] ?? ''));
             $errors = Validator::validate($data, [
                 'nombre' => 'required|max:150',
                 'email' => 'required|email',
@@ -43,6 +44,13 @@ class FuncionariosController extends Controller
             if ($errors) {
                 $funcionario = $data;
                 unset($funcionario['password']);
+                return $this->view('funcionarios/create', compact('errors', 'funcionario'));
+            }
+
+            if ($this->model->existeEmail($data['email'])) {
+                $funcionario = $data;
+                unset($funcionario['password']);
+                $errors['email'][] = 'Ya existe un funcionario con este correo electrónico.';
                 return $this->view('funcionarios/create', compact('errors', 'funcionario'));
             }
 
@@ -70,6 +78,7 @@ class FuncionariosController extends Controller
         {
             $id = (int)Request::get('id');
             $data = Request::all();
+            $data['email'] = strtolower(trim($data['email'] ?? ''));
             $password = $data['password'] ?? '';
             $rules = [
                 'nombre' => 'required|max:150',
@@ -88,6 +97,13 @@ class FuncionariosController extends Controller
             if ($errors) {
                 $funcionario = array_merge($data, ['id' => $id]);
                 unset($funcionario['password']);
+                return $this->view('funcionarios/edit', compact('errors', 'funcionario'));
+            }
+
+            if ($this->model->existeEmail($data['email'], $id)) {
+                $funcionario = array_merge($data, ['id' => $id]);
+                unset($funcionario['password']);
+                $errors['email'][] = 'Ya existe otro funcionario con este correo electrónico.';
                 return $this->view('funcionarios/edit', compact('errors', 'funcionario'));
             }
 
