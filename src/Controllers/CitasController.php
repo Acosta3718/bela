@@ -31,12 +31,34 @@ class CitasController extends Controller
     {
         $fechaIni = Request::get('fecha_ini') ?: date('Y-m-d');
         $fechaFin = Request::get('fecha_fin') ?: date('Y-m-d');
+        $clienteId = Request::get('cliente_id');
+        $clienteId = $clienteId !== null && $clienteId !== '' ? (int)$clienteId : null;
 
-        $citas = $this->model->entreFechas($fechaIni, $fechaFin);
+        $citas = $this->model->entreFechas($fechaIni, $fechaFin, null, $clienteId);
         $clientes = $this->cliente->all();
+        $clienteSeleccionado = $clienteId ? $this->cliente->find($clienteId) : null;
+        $clienteLabel = '';
+
+        if ($clienteSeleccionado) {
+            $detalles = array_filter([
+                $clienteSeleccionado['telefono'] ?? '',
+                $clienteSeleccionado['email'] ?? '',
+            ]);
+            $clienteLabel = trim($clienteSeleccionado['nombre'] . (!empty($detalles) ? ' · ' . implode(' · ', $detalles) : ''));
+        }
+
         $funcionarios = $this->funcionario->all();
         $serviciosPorCita = $this->model->serviciosPorCita(array_column($citas, 'id'));
-        return $this->view('citas/index', compact('citas', 'clientes', 'funcionarios', 'serviciosPorCita', 'fechaIni', 'fechaFin'));
+        return $this->view('citas/index', compact(
+            'citas',
+            'clientes',
+            'funcionarios',
+            'serviciosPorCita',
+            'fechaIni',
+            'fechaFin',
+            'clienteId',
+            'clienteLabel'
+        ));
     }
 
     public function create()

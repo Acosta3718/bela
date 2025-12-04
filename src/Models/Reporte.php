@@ -44,7 +44,8 @@ class Reporte
     {
         $movimientos = $this->movimientosPorCuenta($inicio, $fin, $cuentaId);
 
-        $saldoInicial = $inicio ? $this->saldoHastaFechaAnterior($inicio, $cuentaId) : 0;
+        $saldoBase = $this->saldoInicialCuentas($cuentaId);
+        $saldoInicial = ($inicio ? $this->saldoHastaFechaAnterior($inicio, $cuentaId) : 0) + $saldoBase;
         $saldo = $saldoInicial;
         $ingresos = 0;
         $egresos = 0;
@@ -110,6 +111,49 @@ class Reporte
         return $saldo;
     }
 
+    protected function saldoInicialCuentas(?int $cuentaId = null): float
+    {
+        $cuentas = $this->obtenerSaldosActuales($cuentaId);
+
+        if (empty($cuentas)) {
+            return 0;
+        }
+
+        $movimientosHistoricos = $this->movimientosPorCuenta(null, null, $cuentaId);
+        $netosPorCuenta = [];
+
+        foreach ($movimientosHistoricos as $movimiento) {
+            $monto = (float)$movimiento['monto'];
+            $netosPorCuenta[$movimiento['cuenta_id']] = ($netosPorCuenta[$movimiento['cuenta_id']] ?? 0)
+                + ($movimiento['tipo'] === 'ingreso' ? $monto : -$monto);
+        }
+
+        $saldoInicial = 0;
+
+        foreach ($cuentas as $cuenta) {
+            $neto = $netosPorCuenta[$cuenta['id']] ?? 0;
+            $saldoInicial += (float)$cuenta['saldo'] - $neto;
+        }
+
+        return $saldoInicial;
+    }
+
+    protected function obtenerSaldosActuales(?int $cuentaId = null): array
+    {
+        $sql = 'SELECT id, saldo FROM cuentas WHERE activo = 1';
+        $params = [];
+
+        if ($cuentaId !== null) {
+            $sql .= ' AND id = :id';
+            $params['id'] = $cuentaId;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+    
     protected function movimientosPorCuenta(?string $inicio, ?string $fin, ?int $cuentaId = null): array
     {
         $params = [];

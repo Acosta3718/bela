@@ -33,17 +33,39 @@ class VentasController extends Controller
         $hoy = date('Y-m-d');
         $fechaIni = Request::get('fecha_ini') ?: $hoy;
         $fechaFin = Request::get('fecha_fin') ?: $fechaIni;
+        $clienteId = Request::get('cliente_id');
+        $clienteId = $clienteId !== null && $clienteId !== '' ? (int)$clienteId : null;
 
         if ($fechaIni > $fechaFin) {
             [$fechaIni, $fechaFin] = [$fechaFin, $fechaIni];
         }
 
-        $ventas = $this->model->listarConDetalles($fechaIni, $fechaFin);
+        $ventas = $this->model->listarConDetalles($fechaIni, $fechaFin, $clienteId);
         $citaIds = array_values(array_filter(array_column($ventas, 'cita_id')));
         $serviciosPorCita = $this->cita->serviciosConPrecioPorCita($citaIds);
         $citasInfo = $this->cita->infoBasicaPorIds($citaIds);
         $cuentas = $this->cuenta->activos();
-        return $this->view('ventas/index', compact('ventas', 'serviciosPorCita', 'citasInfo', 'fechaIni', 'fechaFin', 'cuentas'));
+        $clienteSeleccionado = $clienteId ? $this->cliente->find($clienteId) : null;
+        $clienteLabel = '';
+
+        if ($clienteSeleccionado) {
+            $detalles = array_filter([
+                $clienteSeleccionado['telefono'] ?? '',
+                $clienteSeleccionado['email'] ?? '',
+            ]);
+            $clienteLabel = trim($clienteSeleccionado['nombre'] . (!empty($detalles) ? ' · ' . implode(' · ', $detalles) : ''));
+        }
+
+        return $this->view('ventas/index', compact(
+            'ventas',
+            'serviciosPorCita',
+            'citasInfo',
+            'fechaIni',
+            'fechaFin',
+            'cuentas',
+            'clienteId',
+            'clienteLabel'
+        ));
     }
 
     public function create()

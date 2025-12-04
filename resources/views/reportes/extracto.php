@@ -69,42 +69,44 @@
 
 <?php if (!$resumido): ?>
     <?php if (!empty($movimientos)): ?>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Cuenta</th>
-                    <th>Detalle</th>
-                    <th>Tipo</th>
-                    <th class="text-end">Monto</th>
-                    <th class="text-end">Saldo</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td colspan="5"><strong>Saldo inicial antes del rango</strong></td>
-                    <td class="text-end">Gs <?= number_format($saldoInicial, 0, ',', '.') ?></td>
-                </tr>
-                <?php foreach ($movimientos as $mov): ?>
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
                     <tr>
-                        <td><?= htmlspecialchars($mov['fecha']) ?></td>
-                        <td><?= htmlspecialchars($mov['cuenta_nombre']) ?></td>
-                        <td><?= htmlspecialchars($mov['descripcion']) ?></td>
-                        <td class="text-<?= $mov['tipo'] === 'ingreso' ? 'success' : 'danger' ?>"><?= ucfirst($mov['tipo']) ?></td>
-                        <td class="text-end">Gs <?= number_format((float)$mov['monto'], 0, ',', '.') ?></td>
-                        <td class="text-end">Gs <?= number_format((float)$mov['saldo'], 0, ',', '.') ?></td>
+                        <th>Fecha</th>
+                        <th>Cuenta</th>
+                        <th>Detalle</th>
+                        <th>Tipo</th>
+                        <th class="text-end">Monto</th>
+                        <th class="text-end">Saldo</th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-            <tfoot>
-                <tr>
-                    <th colspan="4">Totales en rango</th>
-                    <th class="text-end">Gs <?= number_format($totalIngresos - $totalEgresos, 0, ',', '.') ?></th>
-                    <th class="text-end">Gs <?= number_format($saldoFinal, 0, ',', '.') ?></th>
-                </tr>
-            </tfoot>
-        </table>
-    <?php else: ?>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="5"><strong>Saldo inicial antes del rango</strong></td>
+                        <td class="text-end">Gs <?= number_format($saldoInicial, 0, ',', '.') ?></td>
+                    </tr>
+                    <?php foreach ($movimientos as $mov): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($mov['fecha']) ?></td>
+                            <td><?= htmlspecialchars($mov['cuenta_nombre']) ?></td>
+                            <td><?= htmlspecialchars($mov['descripcion']) ?></td>
+                            <td class="text-<?= $mov['tipo'] === 'ingreso' ? 'success' : 'danger' ?>"><?= ucfirst($mov['tipo']) ?></td>
+                            <td class="text-end">Gs <?= number_format((float)$mov['monto'], 0, ',', '.') ?></td>
+                            <td class="text-end">Gs <?= number_format((float)$mov['saldo'], 0, ',', '.') ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="4">Totales en rango</th>
+                        <th class="text-end">Gs <?= number_format($totalIngresos - $totalEgresos, 0, ',', '.') ?></th>
+                        <th class="text-end">Gs <?= number_format($saldoFinal, 0, ',', '.') ?></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+<?php else: ?>
         <div class="alert alert-light">No se encontraron movimientos para los filtros seleccionados.</div>
     <?php endif; ?>
 <?php else: ?>

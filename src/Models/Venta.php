@@ -17,7 +17,7 @@ class Venta extends Model
         'cuenta_id'
     ];
 
-    public function listarConDetalles(?string $desde, ?string $hasta): array
+    public function listarConDetalles(?string $desde, ?string $hasta, ?int $clienteId = null): array
     {
         $sql =
             'SELECT v.*, c.fecha AS cita_fecha, c.hora_inicio, cl.nombre AS cliente '
@@ -38,6 +38,11 @@ class Venta extends Model
             $params['hasta'] = $hasta;
         }
 
+        if ($clienteId !== null) {
+            $sql .= ' AND c.cliente_id = :cliente_id';
+            $params['cliente_id'] = $clienteId;
+        }
+        
         $sql .= ' ORDER BY c.fecha DESC, c.hora_inicio DESC, v.id DESC';
 
         $stmt = $this->db->prepare($sql);

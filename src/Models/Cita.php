@@ -57,7 +57,7 @@ class Cita extends Model
         return $stmt->fetchAll();
     }
 
-    public function entreFechas(string $desde, string $hasta, ?int $funcionarioId = null): array
+    public function entreFechas(string $desde, string $hasta, ?int $funcionarioId = null, ?int $clienteId = null): array
     {
         $sql = "SELECT * FROM {$this->table} WHERE fecha BETWEEN :desde AND :hasta";
         $params = ['desde' => $desde, 'hasta' => $hasta];
@@ -67,6 +67,11 @@ class Cita extends Model
             $params['funcionario'] = $funcionarioId;
         }
 
+        if ($clienteId !== null) {
+            $sql .= " AND cliente_id = :cliente";
+            $params['cliente'] = $clienteId;
+        }
+        
         $sql .= " ORDER BY fecha, hora_inicio";
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);

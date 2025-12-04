@@ -32,8 +32,23 @@ class GastosController extends Controller
 
         $gastos = $this->model->filtrar($fechaIni, $fechaFin, $proveedorId);
         $proveedores = $this->proveedor->activos();
+        $proveedorSeleccionado = $proveedorId ? $this->proveedor->find($proveedorId) : null;
+        $proveedorLabel = '';
 
-        return $this->view('gastos/index', compact('gastos', 'fechaIni', 'fechaFin', 'proveedorId', 'proveedores'));
+        if ($proveedorSeleccionado) {
+            $detalles = array_filter([
+                $proveedorSeleccionado['documento'] ?? '',
+                $proveedorSeleccionado['telefono'] ?? '',
+            ]);
+            $proveedorLabel = trim(
+                $proveedorSeleccionado['nombre'] . (!empty($detalles) ? ' · ' . implode(' · ', $detalles) : '')
+            );
+        }
+
+        return $this->view(
+            'gastos/index',
+            compact('gastos', 'fechaIni', 'fechaFin', 'proveedorId', 'proveedores', 'proveedorLabel')
+        );
     }
 
     public function create()
