@@ -33,19 +33,19 @@ class FuncionariosController extends Controller
             $data = Request::all();
             $data['email'] = strtolower(trim($data['email'] ?? ''));
             $errors = Validator::validate($data, [
-                'nombre' => 'required|max:150',
-                'email' => 'required|email',
-                'telefono' => 'required|max:20',
-                'rol' => 'required',
-                'porcentaje_comision' => 'required',
-                'password' => 'required|min:8'
-            ]);
+            'nombre' => 'required|max:150',
+            'email' => 'required|email',
+            'telefono' => 'required|max:20',
+            'rol' => 'required',
+            'porcentaje_comision' => 'required',
+            'password' => 'required|min:8'
+        ]);
 
-            if ($errors) {
-                $funcionario = $data;
-                unset($funcionario['password']);
-                return $this->view('funcionarios/create', compact('errors', 'funcionario'));
-            }
+        if ($errors) {
+            $funcionario = $data;
+            unset($funcionario['password']);
+            return $this->view('funcionarios/create', compact('errors', 'funcionario'));
+        }
 
             if ($this->model->existeEmail($data['email'])) {
                 $funcionario = $data;
@@ -54,6 +54,7 @@ class FuncionariosController extends Controller
                 return $this->view('funcionarios/create', compact('errors', 'funcionario'));
             }
 
+            $data['disponible_agenda'] = isset($data['disponible_agenda']) ? (int)$data['disponible_agenda'] : 1;
             $data['activo'] = isset($data['activo']) ? 1 : 0;
             $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
             try {
@@ -81,12 +82,12 @@ class FuncionariosController extends Controller
             $data['email'] = strtolower(trim($data['email'] ?? ''));
             $password = $data['password'] ?? '';
             $rules = [
-                'nombre' => 'required|max:150',
-                'email' => 'required|email',
-                'telefono' => 'required|max:20',
-                'rol' => 'required',
-                'porcentaje_comision' => 'required'
-            ];
+            'nombre' => 'required|max:150',
+            'email' => 'required|email',
+            'telefono' => 'required|max:20',
+            'rol' => 'required',
+            'porcentaje_comision' => 'required'
+        ];
 
             if ($password !== '') {
                 $rules['password'] = 'min:8';
@@ -107,6 +108,7 @@ class FuncionariosController extends Controller
                 return $this->view('funcionarios/edit', compact('errors', 'funcionario'));
             }
 
+            $data['disponible_agenda'] = isset($data['disponible_agenda']) ? (int)$data['disponible_agenda'] : 1;
             $data['activo'] = isset($data['activo']) ? 1 : 0;
             if ($password !== '') {
                 $data['password'] = password_hash($password, PASSWORD_DEFAULT);

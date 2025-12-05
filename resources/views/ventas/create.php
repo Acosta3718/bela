@@ -2,7 +2,7 @@
 <h1 class="h3 mb-3">Registrar venta</h1>
 <form class="row g-3 align-items-end mb-4" method="get" action="<?= url('/ventas/crear') ?>">
      <div class="col-md-6 position-relative">
-        <label class="form-label">Filtrar por cliente</label>
+        <label class="form-label">Buscar por cliente</label>
         <input type="hidden" name="cliente_id" id="filtro-cliente-id" value="<?= htmlspecialchars($clienteId ?? '') ?>">
         <input type="text" class="form-control" autocomplete="off" data-cliente-search data-url="<?= url('/clientes/buscar') ?>" value="<?= htmlspecialchars($clienteLabel ?? '') ?>" placeholder="Buscar por nombre, teléfono o correo">
         <div id="filtro-cliente-sugerencias" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 1050;"></div>

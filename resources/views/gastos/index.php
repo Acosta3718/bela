@@ -28,7 +28,7 @@
         <div class="form-text">Escribe al menos dos caracteres para ver sugerencias.</div>
     </div>
     <div class="col-md-3 d-flex gap-2">
-        <button class="btn btn-secondary">Filtrar</button>
+        <button class="btn btn-secondary">Buscar</button>
         <a class="btn btn-link" href="<?= url('/gastos') ?>">Limpiar</a>
     </div>
 </form>
@@ -54,7 +54,7 @@
             <?php foreach ($gastos as $gasto): ?>
                 <tr>
                     <td><?= htmlspecialchars($gasto['fecha']) ?></td>
-                    <td><?= htmlspecialchars($gasto['concepto']) ?></td>
+                    <td><?= htmlspecialchars($gasto['concepto_nombre'] ?? $gasto['concepto']) ?></td>
                     <td><?= htmlspecialchars($gasto['proveedor_nombre'] ?? '') ?></td>
                     <td><?= htmlspecialchars($gasto['nro_factura'] ?? '') ?></td>
                     <td>Gs <?= number_format((float)$gasto['monto'], 0, ',', '.') ?></td>

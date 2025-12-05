@@ -37,6 +37,18 @@
     <input type="number" name="porcentaje_comision" class="form-control" value="<?= htmlspecialchars($funcionario['porcentaje_comision'] ?? '') ?>">
     <?php if (!empty($errors['porcentaje_comision'])): ?><div class="text-danger small"><?= implode(', ', $errors['porcentaje_comision']) ?></div><?php endif; ?>
 </div>
+<div class="mb-3">
+    <label class="form-label d-block">Mostrar en agendas y pagos</label>
+    <?php $visible = isset($funcionario['disponible_agenda']) ? (int)$funcionario['disponible_agenda'] : 1; ?>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="disponible_agenda" id="visible-si" value="1" <?= $visible ? 'checked' : '' ?>>
+        <label class="form-check-label" for="visible-si">Sí</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="disponible_agenda" id="visible-no" value="0" <?= !$visible ? 'checked' : '' ?>>
+        <label class="form-check-label" for="visible-no">No</label>
+    </div>
+</div>
 <div class="form-check form-switch mb-3">
     <input class="form-check-input" type="checkbox" name="activo" <?= !empty($funcionario['activo']) ? 'checked' : '' ?>>
     <label class="form-check-label">Activo</label>

@@ -40,7 +40,7 @@
     </div>
 
     <div class="d-flex align-items-center gap-2 mb-3">
-        <button type="button" class="btn btn-outline-secondary" id="filtrar-ventas">Filtrar ventas cobradas</button>
+        <button type="button" class="btn btn-outline-secondary" id="filtrar-ventas">Buscar ventas cobradas</button>
         <span class="text-muted small">Seleccione funcionario y rango para listar ventas pagadas.</span>
     </div>
 

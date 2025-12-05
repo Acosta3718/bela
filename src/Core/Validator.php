@@ -11,6 +11,9 @@ class Validator
             $rulesArray = explode('|', $ruleString);
             $value = $data[$field] ?? null;
             foreach ($rulesArray as $rule) {
+                if ($rule === 'nullable' && ($value === null || $value === '')) {
+                    break;
+                }
                 if ($rule === 'required' && ($value === null || $value === '')) {
                     $errors[$field][] = 'Este campo es obligatorio';
                 }

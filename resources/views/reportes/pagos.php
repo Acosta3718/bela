@@ -10,7 +10,7 @@
         <input type="date" name="fin" class="form-control" value="<?= htmlspecialchars($fin) ?>">
     </div>
     <div class="col-md-4 d-flex align-items-end">
-        <button class="btn btn-primary">Filtrar</button>
+        <button class="btn btn-primary">Buscar</button>
     </div>
 </form>
 <table class="table table-striped">

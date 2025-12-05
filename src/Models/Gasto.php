@@ -10,11 +10,13 @@ class Gasto extends Model
 
     protected array $fillable = [
         'concepto',
+        'concepto_id',
         'monto',
         'fecha',
         'notas',
         'proveedor_id',
-        'nro_factura'
+        'nro_factura',
+        'cuenta_id'
     ];
 
     public function allConProveedor(): array
@@ -32,9 +34,10 @@ class Gasto extends Model
     public function filtrar(?string $desde, ?string $hasta, ?int $proveedorId = null): array
     {
         $sql =
-            'SELECT g.*, p.nombre AS proveedor_nombre '
+            'SELECT g.*, p.nombre AS proveedor_nombre, cpt.nombre as concepto_nombre '
             . 'FROM gastos g '
             . 'LEFT JOIN proveedores p ON p.id = g.proveedor_id '
+            . 'LEFT JOIN conceptos cpt ON cpt.id = g.concepto_id'
             . 'WHERE 1=1';
 
         $params = [];

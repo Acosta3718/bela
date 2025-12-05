@@ -34,7 +34,7 @@ class PagosController extends Controller
 
     public function create()
     {
-        $funcionarios = $this->funcionario->activos();
+        $funcionarios = $this->funcionario->activosParaAgenda();
         $funcionarioId = (int)Request::get('funcionario_id', 0);
         $periodoInicio = Request::get('periodo_inicio') ?: date('Y-m-d');
         $periodoFin = Request::get('periodo_fin') ?: date('Y-m-d');
@@ -73,7 +73,7 @@ class PagosController extends Controller
         }
 
         if ($errors) {
-            $funcionarios = $this->funcionario->activos();
+            $funcionarios = $this->funcionario->activosParaAgenda();
             $ventas = $funcionarioId
                 ? $this->venta->pagadasParaPago($funcionarioId, $data['periodo_inicio'] ?? null, $data['periodo_fin'] ?? null)
                 : [];
@@ -86,7 +86,7 @@ class PagosController extends Controller
 
         if (empty($ventasPagadas)) {
             $errors['venta_ids'][] = 'No se encontraron ventas cobradas para el funcionario y rango indicado.';
-            $funcionarios = $this->funcionario->activos();
+            $funcionarios = $this->funcionario->activosParaAgenda();
             $ventas = [];
             $pago = $data;
             $cuentas = $this->cuenta->activos();
@@ -95,7 +95,7 @@ class PagosController extends Controller
 
         if (count($ventasPagadas) < count($ventaIds)) {
             $errors['venta_ids'][] = 'Algunas ventas seleccionadas ya fueron liquidadas en un pago previo y no pueden volver a cobrarse.';
-            $funcionarios = $this->funcionario->activos();
+            $funcionarios = $this->funcionario->activosParaAgenda();
             $ventas = $this->venta->pagadasParaPago($funcionarioId, $data['periodo_inicio'], $data['periodo_fin']);
             $pago = $data;
             $cuentas = $this->cuenta->activos();
@@ -124,7 +124,7 @@ class PagosController extends Controller
 
         if ($cuenta && $totalPagar > (float)$cuenta['saldo']) {
             $errors['cuenta_id'][] = 'La cuenta seleccionada no tiene saldo suficiente para cubrir el pago.';
-            $funcionarios = $this->funcionario->activos();
+            $funcionarios = $this->funcionario->activosParaAgenda();
             $ventas = $funcionarioId
                 ? $this->venta->pagadasParaPago($funcionarioId, $data['periodo_inicio'] ?? null, $data['periodo_fin'] ?? null)
                 : [];

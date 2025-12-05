@@ -13,6 +13,7 @@ use App\Controllers\ProveedoresController;
 use App\Controllers\CuentasController;
 use App\Controllers\VentasController;
 use App\Controllers\TransferenciasController;
+use App\Controllers\ConceptosController;
 
 $router->get('/', [DashboardController::class, 'index']);
 
@@ -80,6 +81,15 @@ $router->post('/gastos', [GastosController::class, 'store']);
 $router->get('/gastos/editar', [GastosController::class, 'edit']);
 $router->post('/gastos/actualizar', [GastosController::class, 'update']);
 $router->post('/gastos/eliminar', [GastosController::class, 'destroy']);
+
+$router->get('/conceptos', [ConceptosController::class, 'index']);
+$router->get('/conceptos/buscar', [ConceptosController::class, 'buscar']);
+$router->get('/conceptos/crear', [ConceptosController::class, 'create']);
+$router->post('/conceptos', [ConceptosController::class, 'store']);
+$router->post('/conceptos/inline', [ConceptosController::class, 'storeInline']);
+$router->get('/conceptos/editar', [ConceptosController::class, 'edit']);
+$router->post('/conceptos/actualizar', [ConceptosController::class, 'update']);
+$router->post('/conceptos/eliminar', [ConceptosController::class, 'destroy']);
 
 $router->get('/pagos', [PagosController::class, 'index']);
 $router->get('/pagos/crear', [PagosController::class, 'create']);

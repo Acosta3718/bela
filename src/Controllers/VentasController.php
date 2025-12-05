@@ -113,19 +113,22 @@ class VentasController extends Controller
 
         $descuento = (float)($data['descuento'] ?? 0);
         $serviciosPorCita = $this->cita->serviciosConPrecioPorCita($citaIds);
-        $subtotal = 0;
+        $subtotalCalculado = 0;
         foreach ($serviciosPorCita as $detalles) {
             foreach ($detalles as $detalle) {
-                $subtotal += (float)($detalle['precio_base'] ?? 0);
+                $subtotalCalculado += (float)($detalle['precio_base'] ?? 0);
             }
         }
 
+        $subtotalIngresado = isset($data['subtotal']) && $data['subtotal'] !== '' ? (float)$data['subtotal'] : null;
+        $subtotal = $subtotalIngresado !== null ? max(0, $subtotalIngresado) : $subtotalCalculado;
         $montoTotal = max(0, $subtotal - $descuento);
 
         if ($errors) {
             $citas = $this->cita->citasConTotales();
             $venta = $data;
             $venta['cita_ids'] = $citaIds;
+            $venta['subtotal'] = $data['subtotal'] ?? $subtotalCalculado;
             $cuentas = $this->cuenta->activos();
             return $this->view('ventas/create', compact('errors', 'venta', 'citas', 'serviciosPorCita', 'cuentas'));
         }
@@ -149,6 +152,7 @@ class VentasController extends Controller
         $id = (int)Request::get('id');
         $venta = $this->model->find($id);
         $venta['cita_ids'] = [$venta['cita_id'] ?? null];
+        $venta['subtotal'] = ($venta['monto_total'] ?? 0) + ($venta['descuento'] ?? 0);
         $citas = $this->cita->citasConTotales(null, $venta['id']);
         $serviciosPorCita = $this->cita->serviciosConPrecioPorCita(array_column($citas, 'id'));
         $cuentas = $this->cuenta->activos();
@@ -180,18 +184,21 @@ class VentasController extends Controller
 
         $descuento = (float)($data['descuento'] ?? 0);
         $serviciosPorCita = $this->cita->serviciosConPrecioPorCita($citaIds);
-        $subtotal = 0;
+        $subtotalCalculado = 0;
         foreach ($serviciosPorCita as $detalles) {
             foreach ($detalles as $detalle) {
-                $subtotal += (float)($detalle['precio_base'] ?? 0);
+                $subtotalCalculado += (float)($detalle['precio_base'] ?? 0);
             }
         }
 
+        $subtotalIngresado = isset($data['subtotal']) && $data['subtotal'] !== '' ? (float)$data['subtotal'] : null;
+        $subtotal = $subtotalIngresado !== null ? max(0, $subtotalIngresado) : $subtotalCalculado;
         $montoTotal = max(0, $subtotal - $descuento);
 
         if ($errors) {
             $venta = array_merge($data, ['id' => $id]);
             $venta['cita_ids'] = $citaIds;
+            $venta['subtotal'] = $data['subtotal'] ?? $subtotalCalculado;
             $citas = $this->cita->citasConTotales(null, $id);
             $cuentas = $this->cuenta->activos();
             return $this->view('ventas/edit', compact('errors', 'venta', 'citas', 'serviciosPorCita', 'cuentas'));

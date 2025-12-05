@@ -13,7 +13,13 @@
                 <li class="nav-item"><a class="nav-link" href="/bela/public/proveedores">Proveedores</a></li>
                 <li class="nav-item"><a class="nav-link" href="/bela/public/citas">Citas</a></li>
                 <li class="nav-item"><a class="nav-link" href="/bela/public/ventas">Ventas</a></li>
-                <li class="nav-item"><a class="nav-link" href="/bela/public/gastos">Gastos</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Gastos</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/bela/public/gastos">Listado</a></li>
+                        <li><a class="dropdown-item" href="/bela/public/conceptos">Conceptos</a></li>
+                    </ul>
+                </li>
                 <li class="nav-item"><a class="nav-link" href="/bela/public/pagos">Pagos</a></li>
                 <?php if ($esAdmin): ?>
                     <li class="nav-item"><a class="nav-link" href="/bela/public/cuentas">Cuentas</a></li>

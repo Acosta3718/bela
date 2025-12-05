@@ -34,7 +34,7 @@
         </div>
     </div>
     <div class="col-md-1 d-flex align-items-end">
-        <button class="btn btn-primary w-100">Filtrar</button>
+        <button class="btn btn-primary w-100">Buscar</button>
     </div>
 </form>
 

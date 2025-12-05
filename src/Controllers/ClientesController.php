@@ -39,9 +39,10 @@ class ClientesController extends Controller
     public function store()
     {
         $data = Request::all();
+        $data['email'] = $data['email'] === '' ? null : $data['email'];
         $errors = Validator::validate($data, [
             'nombre' => 'required|max:150',
-            'email' => 'email',
+            'email' => 'nullable|email',
             'telefono' => 'required|max:20'
         ]);
 
@@ -57,9 +58,10 @@ class ClientesController extends Controller
     public function storeInline()
     {
         $data = Request::all();
+        $data['email'] = $data['email'] === '' ? null : $data['email'];
         $errors = Validator::validate($data, [
             'nombre' => 'required|max:150',
-            'email' => 'email',
+            'email' => 'nullable|email',
             'telefono' => 'required|max:20'
         ]);
 
@@ -94,9 +96,10 @@ class ClientesController extends Controller
     {
         $id = (int)Request::get('id');
         $data = Request::all();
+        $data['email'] = $data['email'] === '' ? null : $data['email'];
         $errors = Validator::validate($data, [
             'nombre' => 'required|max:150',
-            'email' => 'email',
+            'email' => 'nullable|email',
             'telefono' => 'required|max:20'
         ]);
 

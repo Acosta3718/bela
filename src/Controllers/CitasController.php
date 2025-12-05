@@ -218,7 +218,7 @@ class CitasController extends Controller
 
     private function funcionariosParaFormulario(?int $actualId = null): array
     {
-        $funcionarios = $this->funcionario->activos();
+        $funcionarios = $this->funcionario->activosParaAgenda();
 
         if ($actualId) {
             $existe = array_filter($funcionarios, fn($item) => (int)$item['id'] === $actualId);

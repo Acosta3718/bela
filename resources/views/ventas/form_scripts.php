@@ -5,7 +5,9 @@
         return Number(number || 0).toLocaleString('es-PY', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     };
 
-    function actualizarTotales() {
+    let subtotalManual = false;
+
+    function subtotalSeleccionado() {
         const checkboxes = document.querySelectorAll('.cita-option');
         let subtotal = 0;
         checkboxes.forEach(cb => {
@@ -13,14 +15,27 @@
                 subtotal += parseFloat(cb.dataset.total || 0);
             }
         });
+        return Math.round(subtotal);
+    }
+
+    function actualizarTotales(desdeSeleccion = false) {
         const descuento = Math.round(parseFloat(document.getElementById('descuento').value || 0));
-        const subtotalRedondeado = Math.round(subtotal);
-        const total = Math.max(0, subtotalRedondeado - descuento);
-        document.getElementById('subtotal').value = toMoney(subtotalRedondeado);
+        const subtotalInput = document.getElementById('subtotal');
+        const subtotalCalculado = subtotalSeleccionado();
+        let subtotal = subtotalCalculado;
+
+        if (subtotalManual) {
+            subtotal = Math.max(0, Math.round(parseFloat(subtotalInput.value || 0)));
+        } else {
+            subtotal = subtotalCalculado;
+            subtotalInput.value = subtotal;
+        }
+
+        const total = Math.max(0, subtotal - descuento);
         document.getElementById('monto_total_visible').value = toMoney(total);
         document.getElementById('monto_total').value = total;
         document.getElementById('total-modal').innerText = 'Gs ' + toMoney(total);
-        return { subtotal: subtotalRedondeado, total, descuento };
+        return { subtotal, total, descuento };
     }
 
     function datosTicketSeleccionado() {
@@ -41,9 +56,23 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        const subtotalInput = document.getElementById('subtotal');
+        if (subtotalInput && subtotalInput.value && parseFloat(subtotalInput.value) > 0) {
+            subtotalManual = true;
+        }
         actualizarTotales();
-        document.querySelectorAll('.cita-option').forEach(cb => cb.addEventListener('change', actualizarTotales));
-        document.getElementById('descuento').addEventListener('input', actualizarTotales);
+        document.querySelectorAll('.cita-option').forEach(cb => cb.addEventListener('change', () => actualizarTotales(true)));
+        document.getElementById('descuento').addEventListener('input', () => actualizarTotales(false));
+        subtotalInput.addEventListener('input', () => {
+            subtotalManual = true;
+            actualizarTotales(false);
+        });
+        subtotalInput.addEventListener('blur', () => {
+            if (subtotalInput.value === '') {
+                subtotalManual = false;
+                actualizarTotales(true);
+            }
+        });
 
         const modalElement = document.getElementById('modalCobro');
         const modal = modalElement ? new bootstrap.Modal(modalElement) : null;

@@ -162,12 +162,14 @@ class Reporte
         $condicionesPagos = ['p.cuenta_id IS NOT NULL'];
         $condicionesTransferenciasIngreso = ['t.cuenta_destino_id IS NOT NULL'];
         $condicionesTransferenciasEgreso = ['t.cuenta_origen_id IS NOT NULL'];
+        $condicionesGastos = ['g.cuenta_id IS NOT NULL'];
 
         if (!empty($inicio)) {
             $condicionesVentas[] = 'c.fecha >= :inicio';
             $condicionesPagos[] = 'p.fecha_pago >= :inicio';
             $condicionesTransferenciasIngreso[] = 't.fecha >= :inicio';
             $condicionesTransferenciasEgreso[] = 't.fecha >= :inicio';
+            $condicionesGastos[] = 'g.fecha >= :inicio';
             $params['inicio'] = $inicio;
         }
 
@@ -176,6 +178,7 @@ class Reporte
             $condicionesPagos[] = 'p.fecha_pago <= :fin';
             $condicionesTransferenciasIngreso[] = 't.fecha <= :fin';
             $condicionesTransferenciasEgreso[] = 't.fecha <= :fin';
+            $condicionesGastos[] = 'g.fecha <= :fin';
             $params['fin'] = $fin;
         }
 
@@ -184,6 +187,7 @@ class Reporte
             $condicionesPagos[] = 'p.cuenta_id = :cuenta_id';
             $condicionesTransferenciasIngreso[] = 't.cuenta_destino_id = :cuenta_id';
             $condicionesTransferenciasEgreso[] = 't.cuenta_origen_id = :cuenta_id';
+            $condicionesGastos[] = 'g.cuenta_id = :cuenta_id';
             $params['cuenta_id'] = $cuentaId;
         }
 
@@ -223,7 +227,15 @@ class Reporte
             . 'JOIN cuentas cd ON cd.id = t.cuenta_destino_id '
             . 'WHERE ' . implode(' AND ', $condicionesTransferenciasEgreso);
 
-        $sql = '(' . $sqlVentas . ') UNION ALL (' . $sqlPagos . ') UNION ALL (' . $sqlTransferIngreso . ') UNION ALL (' . $sqlTransferEgreso . ') '
+        $sqlGastos = 'SELECT g.id AS referencia_id, g.cuenta_id, cu.nombre AS cuenta_nombre, g.fecha AS fecha, '
+            . 'CONCAT("Gasto: ", g.concepto) AS descripcion, '
+            . 'g.monto AS monto, '
+            . '"egreso" AS tipo '
+            . 'FROM gastos g '
+            . 'JOIN cuentas cu ON cu.id = g.cuenta_id '
+            . 'WHERE ' . implode(' AND ', $condicionesGastos);
+
+        $sql = '(' . $sqlVentas . ') UNION ALL (' . $sqlPagos . ') UNION ALL (' . $sqlTransferIngreso . ') UNION ALL (' . $sqlTransferEgreso . ') UNION ALL (' . $sqlGastos . ') '
             . 'ORDER BY fecha ASC, referencia_id ASC';
 
         $stmt = $this->db->prepare($sql);

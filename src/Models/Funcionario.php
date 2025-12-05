@@ -15,6 +15,7 @@ class Funcionario extends Model
         'rol',
         'porcentaje_comision',
         'activo',
+        'disponible_agenda',
         'password'
     ];
 
@@ -40,6 +41,14 @@ class Funcionario extends Model
         return $stmt->fetchAll();
     }
 
+    public function activosParaAgenda(): array
+    {
+        $stmt = $this->db->query(
+            "SELECT * FROM {$this->table} WHERE activo = 1 AND COALESCE(disponible_agenda, 1) = 1 ORDER BY nombre"
+        );
+        return $stmt->fetchAll();
+    }
+    
     public function contarActivos(): int
     {
         $stmt = $this->db->query("SELECT COUNT(*) FROM {$this->table} WHERE activo = 1");

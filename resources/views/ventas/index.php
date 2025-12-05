@@ -28,7 +28,7 @@
         <div class="form-text">Escribe al menos dos caracteres para ver sugerencias.</div>
     </div>
     <div class="col-md-3 col-lg-3 d-flex gap-2">
-        <button class="btn btn-secondary">Filtrar</button>
+        <button class="btn btn-secondary">Buscar</button>
         <a class="btn btn-link" href="<?= url('/ventas') ?>">Limpiar</a>
     </div>
 </form>

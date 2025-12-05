@@ -28,7 +28,7 @@
         <div class="form-text">Escribe al menos dos caracteres para ver sugerencias.</div>
     </div>
     <div class="col-md-2 col-lg-2">
-        <button class="btn btn-secondary">Filtrar</button>
+        <button class="btn btn-secondary">Buscar</button>
         <a class="btn btn-link" href="<?= url('/citas') ?>">Hoy</a>
     </div>
 </form>

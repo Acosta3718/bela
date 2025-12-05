@@ -34,6 +34,11 @@ class Request
             return $sanitized;
         }
 
-        return is_string($value) ? trim($value) : $value;
+        if (is_string($value)) {
+            $value = trim($value);
+            $value = strip_tags($value);
+        }
+
+        return $value;
     }
 }

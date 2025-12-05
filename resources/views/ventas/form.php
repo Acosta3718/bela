@@ -30,7 +30,7 @@
 <div class="row g-3">
     <div class="col-md-4">
         <label class="form-label">Subtotal</label>
-        <input type="text" readonly class="form-control" id="subtotal" value="0.00">
+        <input type="number" name="subtotal" step="1" min="0" class="form-control" id="subtotal" value="<?= htmlspecialchars($venta['subtotal'] ?? '0') ?>">
     </div>
     <div class="col-md-4">
         <label class="form-label">Descuento</label>
