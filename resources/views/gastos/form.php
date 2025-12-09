@@ -165,7 +165,7 @@
         return () => clearList(list);
     };
 
-setupSearch(proveedorSearchInput, proveedorHiddenInput, proveedorSuggestions, buildProveedorLabel);
+    setupSearch(proveedorSearchInput, proveedorHiddenInput, proveedorSuggestions, buildProveedorLabel);
     setupSearch(
         conceptoSearchInput,
         conceptoHiddenInput,

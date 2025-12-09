@@ -37,7 +37,7 @@ class Gasto extends Model
             'SELECT g.*, p.nombre AS proveedor_nombre, cpt.nombre as concepto_nombre '
             . 'FROM gastos g '
             . 'LEFT JOIN proveedores p ON p.id = g.proveedor_id '
-            . 'LEFT JOIN conceptos cpt ON cpt.id = g.concepto_id'
+            . 'LEFT JOIN conceptos cpt ON cpt.id = g.concepto_id '
             . 'WHERE 1=1';
 
         $params = [];

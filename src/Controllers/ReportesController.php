@@ -72,7 +72,10 @@ class ReportesController extends Controller
         }
 
         $clientes = $this->cliente->all();
-        $funcionarios = $this->funcionario->all();
+        $funcionarios = array_values(array_filter(
+            $this->funcionario->activos(),
+            static fn(array $funcionario) => (int)($funcionario['disponible_agenda'] ?? 1) === 1
+        ));
 
         $dias = [];
         $periodo = new DatePeriod(new DateTime($inicio), new DateInterval('P1D'), (new DateTime($fin))->modify('+1 day'));

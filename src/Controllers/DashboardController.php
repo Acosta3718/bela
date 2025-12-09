@@ -20,7 +20,7 @@ class DashboardController extends Controller
         $ventaModel = new Venta();
 
         $totalCitas = $citaModel->countByStatuses(['pendiente', 'confirmada']);
-        $funcionariosActivos = $funcionarioModel->activos();
+        $funcionariosActivos = $funcionarioModel->activosParaAgenda();
         $totalFuncionarios = count($funcionariosActivos);
         $totalVentas = count($ventaModel->all());
 
