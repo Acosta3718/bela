@@ -37,6 +37,8 @@ abstract class Model
         $placeholders = ':' . implode(', :', array_keys($fields));
         $sql = "INSERT INTO {$this->table} ({$columns}) VALUES ({$placeholders})";
         $stmt = $this->db->prepare($sql);
+        /*var_dump($data);
+        exit;*/
         $stmt->execute($fields);
         return (int)$this->db->lastInsertId();
     }

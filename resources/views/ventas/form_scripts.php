@@ -57,11 +57,19 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         const subtotalInput = document.getElementById('subtotal');
-        if (subtotalInput && subtotalInput.value && parseFloat(subtotalInput.value) > 0) {
-            subtotalManual = true;
+        const subtotalInicial = Math.round(parseFloat(subtotalInput.value || 0));
+        const subtotalCalculado = subtotalSeleccionado();
+        subtotalManual = subtotalInicial > 0 && subtotalInicial !== subtotalCalculado && subtotalCalculado > 0;
+
+        if (!subtotalManual) {
+            subtotalInput.value = subtotalCalculado || subtotalInicial || 0;
         }
+
         actualizarTotales();
-        document.querySelectorAll('.cita-option').forEach(cb => cb.addEventListener('change', () => actualizarTotales(true)));
+        document.querySelectorAll('.cita-option').forEach(cb => cb.addEventListener('change', () => {
+            subtotalManual = false;
+            actualizarTotales(true);
+        }));
         document.getElementById('descuento').addEventListener('input', () => actualizarTotales(false));
         subtotalInput.addEventListener('input', () => {
             subtotalManual = true;

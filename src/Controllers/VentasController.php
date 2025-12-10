@@ -7,6 +7,7 @@ use App\Core\Request;
 use App\Core\Validator;
 use App\Models\Cita;
 use App\Models\Cliente;
+use App\Models\Cobro;
 use App\Models\Cuenta;
 use App\Models\Funcionario;
 use App\Models\Venta;
@@ -18,6 +19,7 @@ class VentasController extends Controller
     protected Funcionario $funcionario;
     protected Cliente $cliente;
     protected Cuenta $cuenta;
+    protected Cobro $cobro;
 
     public function __construct()
     {
@@ -26,6 +28,7 @@ class VentasController extends Controller
         $this->funcionario = new Funcionario();
         $this->cliente = new Cliente();
         $this->cuenta = new Cuenta();
+        $this->cobro = new Cobro();
     }
 
     public function index()
@@ -41,6 +44,17 @@ class VentasController extends Controller
         }
 
         $ventas = $this->model->listarConDetalles($fechaIni, $fechaFin, $clienteId);
+        $ventaIds = array_column($ventas, 'id');
+        $totalesCobro = $this->cobro->totalesPorVenta($ventaIds);
+        foreach ($ventas as &$venta) {
+            $resumenCobro = $totalesCobro[$venta['id']] ?? ['total' => 0, 'cuenta_id' => null];
+            $venta['monto_pagado'] = $resumenCobro['total'];
+            $venta['estado_pago'] = $resumenCobro['total'] >= (float)$venta['monto_total'] ? 'pagado' : 'pendiente';
+            if (!empty($resumenCobro['cuenta_id'])) {
+                $venta['cuenta_id'] = $resumenCobro['cuenta_id'];
+            }
+        }
+        unset($venta);
         $citaIds = array_values(array_filter(array_column($ventas, 'cita_id')));
         $serviciosPorCita = $this->cita->serviciosConPrecioPorCita($citaIds);
         $citasInfo = $this->cita->infoBasicaPorIds($citaIds);
@@ -135,13 +149,15 @@ class VentasController extends Controller
 
         $data['cita_id'] = $citaIds[0] ?? null;
         $data['monto_total'] = $montoTotal;
-        $data['monto_pagado'] = isset($data['cobrar']) && $data['cobrar'] ? $montoTotal : (float)($data['monto_pagado'] ?? 0);
-        $data['estado_pago'] = isset($data['cobrar']) && $data['cobrar'] ? 'pagado' : ($data['estado_pago'] ?? 'pendiente');
+        $montoPagado = $requiereCuenta ? $montoTotal : 0;
+        $data['monto_pagado'] = $montoPagado;
+        $data['estado_pago'] = $montoPagado >= $montoTotal ? 'pagado' : ($data['estado_pago'] ?? 'pendiente');
         $data['cuenta_id'] = $requiereCuenta ? $cuentaId : null;
 
         $ventaId = $this->model->create($data);
 
         if ($requiereCuenta && $cuentaSeleccionada) {
+            $this->cobro->registrar($ventaId, $cuentaId, $montoTotal);
             $this->cuenta->depositar($cuentaId, $montoTotal);
         }
         return $this->redirect('/ventas');
@@ -151,6 +167,9 @@ class VentasController extends Controller
     {
         $id = (int)Request::get('id');
         $venta = $this->model->find($id);
+        $resumenCobro = $this->cobro->totalesPorVenta([$id])[$id] ?? ['total' => 0, 'cuenta_id' => $venta['cuenta_id'] ?? null];
+        $venta['monto_pagado'] = $resumenCobro['total'];
+        $venta['cuenta_id'] = $resumenCobro['cuenta_id'];
         $venta['cita_ids'] = [$venta['cita_id'] ?? null];
         $venta['subtotal'] = ($venta['monto_total'] ?? 0) + ($venta['descuento'] ?? 0);
         $citas = $this->cita->citasConTotales(null, $venta['id']);
@@ -165,6 +184,11 @@ class VentasController extends Controller
         $data = Request::all();
         $citaIds = array_values(array_filter((array)($data['cita_ids'] ?? []), fn($id) => $id !== ''));
         $citaIds = array_values(array_unique(array_map('intval', $citaIds)));
+        $ventaActual = $this->model->find($id);
+        if (!$ventaActual) {
+            return $this->redirect('/ventas');
+        }
+        $cobrosPrevios = $this->cobro->porVenta($id);
 
         $errors = Validator::validate($data, [
             'descuento' => 'required',
@@ -176,11 +200,6 @@ class VentasController extends Controller
 
         $cuentaId = isset($data['cuenta_id']) ? (int)$data['cuenta_id'] : null;
         $requiereCuenta = !empty($data['cobrar']) && (int)$data['cobrar'] === 1;
-        $cuentaSeleccionada = $cuentaId ? $this->cuenta->findActiva($cuentaId) : null;
-
-        if ($requiereCuenta && !$cuentaSeleccionada) {
-            $errors['cuenta_id'][] = 'Seleccione una cuenta activa para registrar el cobro.';
-        }
 
         $descuento = (float)($data['descuento'] ?? 0);
         $serviciosPorCita = $this->cita->serviciosConPrecioPorCita($citaIds);
@@ -195,6 +214,18 @@ class VentasController extends Controller
         $subtotal = $subtotalIngresado !== null ? max(0, $subtotalIngresado) : $subtotalCalculado;
         $montoTotal = max(0, $subtotal - $descuento);
 
+        $cuentaObjetivoId = $cuentaId ?: ($cobrosPrevios[0]['cuenta_id'] ?? null);
+        $cuentaSeleccionada = $cuentaObjetivoId ? $this->cuenta->findActiva((int)$cuentaObjetivoId) : null;
+        $debeReemplazarCobros = $requiereCuenta
+            || (!empty($cobrosPrevios) && (
+                $montoTotal !== (float)($ventaActual['monto_total'] ?? 0)
+                || ($cuentaId && $cuentaId !== (int)($ventaActual['cuenta_id'] ?? 0))
+            ));
+
+        if ($debeReemplazarCobros && !$cuentaSeleccionada) {
+            $errors['cuenta_id'][] = 'Seleccione una cuenta activa para registrar el cobro.';
+        }
+
         if ($errors) {
             $venta = array_merge($data, ['id' => $id]);
             $venta['cita_ids'] = $citaIds;
@@ -206,14 +237,19 @@ class VentasController extends Controller
 
         $data['cita_id'] = $citaIds[0] ?? null;
         $data['monto_total'] = $montoTotal;
-        $data['monto_pagado'] = isset($data['cobrar']) && $data['cobrar'] ? $montoTotal : (float)($data['monto_pagado'] ?? 0);
-        $data['estado_pago'] = isset($data['cobrar']) && $data['cobrar'] ? 'pagado' : ($data['estado_pago'] ?? 'pendiente');
-        $data['cuenta_id'] = $requiereCuenta ? $cuentaId : ($data['cuenta_id'] ?? null);
+        $montoPagado = ($debeReemplazarCobros && $cuentaSeleccionada) ? $montoTotal : ($ventaActual['monto_pagado'] ?? 0);
+        $data['monto_pagado'] = $montoPagado;
+        $data['estado_pago'] = $montoPagado >= $montoTotal ? 'pagado' : ($ventaActual['estado_pago'] ?? 'pendiente');
+        $data['cuenta_id'] = $debeReemplazarCobros ? ($cuentaSeleccionada['id'] ?? null) : ($ventaActual['cuenta_id'] ?? null);
 
+        if ($debeReemplazarCobros) {
+            $this->revertirCobros($id);
+        }
         $this->model->update($id, $data);
 
-        if ($requiereCuenta && $cuentaSeleccionada) {
-            $this->cuenta->depositar($cuentaId, $montoTotal);
+        if ($debeReemplazarCobros && $cuentaSeleccionada) {
+            $this->cobro->registrar($id, (int)$cuentaSeleccionada['id'], $montoTotal);
+            $this->cuenta->depositar((int)$cuentaSeleccionada['id'], $montoTotal);
         }
         return $this->redirect('/ventas');
     }
@@ -221,6 +257,7 @@ class VentasController extends Controller
     public function destroy()
     {
         $id = (int)Request::get('id');
+        $this->revertirCobros($id);
         $this->model->delete($id);
         return $this->redirect('/ventas');
     }
@@ -232,14 +269,34 @@ class VentasController extends Controller
         $monto = (float)$data['monto'];
         $cuentaId = isset($data['cuenta_id']) ? (int)$data['cuenta_id'] : null;
         $cuenta = $cuentaId ? $this->cuenta->findActiva($cuentaId) : null;
+        $venta = $this->model->find($id);
 
-        if (!$cuenta || $monto <= 0) {
+         if (!$cuenta || $monto <= 0 || !$venta) {
             return $this->redirect('/ventas');
         }
 
         $this->cuenta->depositar($cuentaId, $monto);
-
-        $this->model->registrarCobro($id, $monto, $cuentaId);
+        $this->cobro->registrar($id, $cuentaId, $monto);
+        $totalCobrado = $this->cobro->totalPorVenta($id);
+        $estadoPago = $totalCobrado >= (float)($venta['monto_total'] ?? 0) ? 'pagado' : 'pendiente';
+        $this->model->update($id, [
+            'monto_pagado' => $totalCobrado,
+            'estado_pago' => $estadoPago,
+            'cuenta_id' => $cuentaId,
+        ]);
         return $this->redirect('/ventas');
+    }
+
+    protected function revertirCobros(int $ventaId): void
+    {
+        $cobros = $this->cobro->porVenta($ventaId);
+        foreach ($cobros as $cobro) {
+            if (!empty($cobro['cuenta_id'])) {
+                $this->cuenta->retirar((int)$cobro['cuenta_id'], (float)$cobro['monto']);
+            }
+        }
+        if (!empty($cobros)) {
+            $this->cobro->eliminarPorVenta($ventaId);
+        }
     }
 }

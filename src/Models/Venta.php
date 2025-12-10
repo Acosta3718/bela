@@ -55,13 +55,16 @@ class Venta extends Model
     {
         $params = ['funcionario' => $funcionarioId];
         $sql =
-            'SELECT v.id, v.monto_total, v.monto_pagado, v.estado_pago, c.fecha AS cita_fecha, '
+            'SELECT v.id, v.monto_total, COALESCE(cb.total_cobrado, 0) AS monto_pagado, '
+            . "CASE WHEN COALESCE(cb.total_cobrado, 0) >= v.monto_total THEN 'pagado' ELSE v.estado_pago END AS estado_pago, "
+            . 'c.fecha AS cita_fecha, '
             . 'f.porcentaje_comision '
             . 'FROM ventas v '
             . 'JOIN citas c ON c.id = v.cita_id '
             . 'JOIN funcionarios f ON f.id = c.funcionario_id '
             . 'LEFT JOIN pagos pg ON pg.venta_id = v.id '
-            . "WHERE v.estado_pago = 'pagado' AND c.funcionario_id = :funcionario AND pg.id IS NULL";
+            . 'LEFT JOIN (SELECT venta_id, SUM(monto) AS total_cobrado FROM cobros GROUP BY venta_id) cb ON cb.venta_id = v.id '
+            . 'WHERE COALESCE(cb.total_cobrado, 0) >= v.monto_total AND c.funcionario_id = :funcionario AND pg.id IS NULL';
 
         if (!empty($desde)) {
             $sql .= ' AND c.fecha >= :desde';

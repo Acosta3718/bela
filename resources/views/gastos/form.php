@@ -174,11 +174,65 @@
     );
 
     if (modalConcepto && modalNombre && btnGuardarConcepto) {
-        const modal = new bootstrap.Modal(modalConcepto);
-        modalConcepto.addEventListener('shown.bs.modal', () => {
+        const resetModal = () => {
             modalNombre.value = '';
             modalError.classList.add('d-none');
+        };
+
+        const getModalInstance = () => {
+            if (window.bootstrap && bootstrap.Modal) {
+                return bootstrap.Modal.getOrCreateInstance(modalConcepto);
+            }
+            return null;
+        };
+
+        const showModalFallback = () => {
+            modalConcepto.classList.add('show');
+            modalConcepto.removeAttribute('aria-hidden');
+            modalConcepto.style.display = 'block';
+            document.body.classList.add('modal-open');
+            document.body.style.overflow = 'hidden';
+            const backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop fade show';
+            backdrop.dataset.conceptoBackdrop = 'true';
+            document.body.appendChild(backdrop);
+        };
+
+        const hideModalFallback = () => {
+            modalConcepto.classList.remove('show');
+            modalConcepto.setAttribute('aria-hidden', 'true');
+            modalConcepto.style.display = 'none';
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('overflow');
+            document.querySelectorAll('[data-concepto-backdrop="true"]').forEach(el => el.remove());
+        };
+
+        const hideModal = () => {
+            const instance = getModalInstance();
+            if (instance) {
+                instance.hide();
+            } else {
+                hideModalFallback();
+            }
+            conceptoSearchInput?.focus();
+        };
+
+        const handleModalShown = () => {
+            resetModal();
             modalNombre.focus();
+        };
+
+        modalConcepto.addEventListener('shown.bs.modal', handleModalShown);
+        modalConcepto.addEventListener('show.bs.modal', resetModal);
+
+        document.querySelectorAll('[data-bs-target="#modal-nuevo-concepto"]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                if (!getModalInstance()) {
+                    resetModal();
+                    showModalFallback();
+                    modalNombre.focus();
+                }
+            });
         });
 
         btnGuardarConcepto.addEventListener('click', () => {
@@ -201,7 +255,7 @@
                     if (conceptoSearchInput) {
                         conceptoSearchInput.value = concepto.nombre;
                     }
-                    modal.hide();
+                    hideModal();
                 })
                 .catch(async (err) => {
                     try {
